@@ -2,8 +2,8 @@ package com.github.mouse0w0.mce;
 
 import com.github.mouse0w0.mce.data.ContentPackMetadata;
 import com.github.mouse0w0.mce.data.ItemData;
-import com.github.mouse0w0.mce.data.ItemStackData;
-import com.github.mouse0w0.mce.data.OreDictionaryData;
+import com.github.mouse0w0.mce.data.OreDictData;
+import com.github.mouse0w0.mce.data.OreDictEntry;
 import com.github.mouse0w0.mce.renderer.FrameBuffer;
 import com.github.mouse0w0.mce.renderer.Renderer;
 import com.github.mouse0w0.mce.util.FileUtils;
@@ -105,16 +105,16 @@ public class Exporter implements Runnable {
     }
 
     private void exportOreDictionary() throws IOException {
-        List<OreDictionaryData> oreDictionaryDataList = new ArrayList<>();
+        List<OreDictData> oreDictDataList = new ArrayList<>();
         for (String oreName : OreDictionary.getOreNames()) {
-            List<ItemStackData> itemStackDataList = OreDictionary.getOres(oreName).parallelStream()
+            List<OreDictEntry> oreDictEntryList = OreDictionary.getOres(oreName).parallelStream()
                     .filter(itemStack -> namespace.equals(itemStack.getItem().getRegistryName().getResourceDomain()))
-                    .map(itemStack -> new ItemStackData(itemStack.getItem().getRegistryName().toString(), itemStack.getMetadata()))
+                    .map(itemStack -> new OreDictEntry(itemStack.getItem().getRegistryName().toString(), itemStack.getMetadata()))
                     .collect(Collectors.toList());
-            if (itemStackDataList.isEmpty()) continue;
-            oreDictionaryDataList.add(new OreDictionaryData(oreName, itemStackDataList));
+            if (oreDictEntryList.isEmpty()) continue;
+            oreDictDataList.add(new OreDictData(oreName, oreDictEntryList));
         }
-        JsonUtils.writeJson(getOutput().resolve("content/" + namespace + "/oreDictionary.json"), oreDictionaryDataList);
+        JsonUtils.writeJson(getOutput().resolve("content/" + namespace + "/oreDictionary.json"), oreDictDataList);
     }
 
     private void exportLanguage(String language) throws IOException {

@@ -1,11 +1,11 @@
 package com.github.mouse0w0.mce.data;
 
-public class ItemStackData {
+public class OreDictEntry {
 
     private String id;
     private int metadata;
 
-    public ItemStackData(String id, int metadata) {
+    public OreDictEntry(String id, int metadata) {
         this.id = id;
         this.metadata = metadata;
     }
