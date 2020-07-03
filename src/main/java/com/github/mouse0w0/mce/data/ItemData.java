@@ -1,5 +1,7 @@
 package com.github.mouse0w0.mce.data;
 
+import java.util.Objects;
+
 public class ItemData {
 
     private String id;
@@ -28,5 +30,19 @@ public class ItemData {
 
     public boolean isBlock() {
         return block;
+    }
+
+    @Override
+    public boolean equals(Object o) {
+        if (this == o) return true;
+        if (o == null || getClass() != o.getClass()) return false;
+        ItemData itemData = (ItemData) o;
+        return metadata == itemData.metadata &&
+                id.equals(itemData.id);
+    }
+
+    @Override
+    public int hashCode() {
+        return Objects.hash(id, metadata);
     }
 }

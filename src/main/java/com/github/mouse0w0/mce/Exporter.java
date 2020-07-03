@@ -89,15 +89,15 @@ public class Exporter implements Runnable {
     private void exportItems() throws IOException {
         FrameBuffer frameBuffer = new FrameBuffer(64, 64);
         Renderer.getInstance().startRenderItem(frameBuffer);
-        List<ItemData> itemDataList = new ArrayList<>();
+        Set<ItemData> itemDataList = new LinkedHashSet<>();
         for (ItemStack itemStack : collectItems()) {
             Item item = itemStack.getItem();
             if (!namespace.equals(item.getRegistryName().getResourceDomain())) continue;
-            itemDataList.add(new ItemData(
+            if (!itemDataList.add(new ItemData(
                     item.getRegistryName().toString(),
                     itemStack.getMetadata(),
                     item.getUnlocalizedName(itemStack),
-                    item instanceof ItemBlock));
+                    item instanceof ItemBlock))) continue;
             Renderer.getInstance().renderItemToPNG(frameBuffer, itemStack, getOutput().resolve("content/" + namespace + "/image/item/" + item.getRegistryName().getResourcePath() + "_" + itemStack.getMetadata() + ".png"));
         }
         JsonUtils.writeJson(getOutput().resolve("content/" + namespace + "/item.json"), itemDataList);
@@ -150,26 +150,31 @@ public class Exporter implements Runnable {
 
         List<ItemStack> itemStacks = new ArrayList<>();
 
-        Set<IBakedModel> foundModels = new HashSet<>();
-        NonNullList<ItemStack> nonNullList = NonNullList.create();
-
+        NonNullList<ItemStack> foundCreativeTabItems = NonNullList.create();
+        BitSet foundMetadata = new BitSet();
+        Set<IBakedModel> foundModel = new HashSet<>();
         for (Item item : Item.REGISTRY) {
             if (item.getHasSubtypes()) {
-                foundModels.clear();
-                nonNullList.clear();
+                foundCreativeTabItems.clear();
 
                 for (CreativeTabs creativeTabs : CreativeTabs.CREATIVE_TAB_ARRAY) {
-                    item.getSubItems(creativeTabs, nonNullList);
+                    item.getSubItems(creativeTabs, foundCreativeTabItems);
                 }
-                if (!nonNullList.isEmpty()) {
-                    itemStacks.addAll(nonNullList);
+                if (!foundCreativeTabItems.isEmpty()) {
+                    foundMetadata.clear();
+                    for (ItemStack itemStack : foundCreativeTabItems) {
+                        if (foundMetadata.get(itemStack.getMetadata())) continue;
+                        foundMetadata.set(itemStack.getMetadata());
+                        itemStacks.add(itemStack);
+                    }
                 } else {
-                    for (int damage = 0; true; damage++) {
-                        ItemStack itemStack = new ItemStack(item, 1, damage);
+                    foundModel.clear();
+                    for (int metadata = 0; metadata < Short.MAX_VALUE; metadata++) {
+                        ItemStack itemStack = new ItemStack(item, 1, metadata);
                         IBakedModel model = itemModelMesher.getItemModel(itemStack);
                         if (model == missingModel) break;
-                        if (foundModels.contains(model)) continue;
-                        foundModels.add(model);
+                        if (foundModel.contains(model)) continue;
+                        foundModel.add(model);
                         itemStacks.add(itemStack);
                     }
                 }
