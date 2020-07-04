@@ -144,6 +144,8 @@ public class Exporter implements Runnable {
         FMLClientHandler.instance().refreshResources(VanillaResourceType.LANGUAGES);
     }
 
+    private static final Set<String> ignoredCreativeTabs = new HashSet<>(Arrays.asList("search", "inventory", "hotbar"));
+
     private static List<ItemStack> collectItems() {
         final IBakedModel missingModel = MinecraftUtils.getModelManager().getMissingModel();
         final ItemModelMesher itemModelMesher = Minecraft.getMinecraft().getRenderItem().getItemModelMesher();
@@ -151,22 +153,17 @@ public class Exporter implements Runnable {
         List<ItemStack> itemStacks = new ArrayList<>();
 
         NonNullList<ItemStack> foundCreativeTabItems = NonNullList.create();
-        BitSet foundMetadata = new BitSet();
         Set<IBakedModel> foundModel = new HashSet<>();
         for (Item item : Item.REGISTRY) {
             if (item.getHasSubtypes()) {
                 foundCreativeTabItems.clear();
 
                 for (CreativeTabs creativeTabs : CreativeTabs.CREATIVE_TAB_ARRAY) {
+                    if (ignoredCreativeTabs.contains(creativeTabs.getTabLabel())) continue;
                     item.getSubItems(creativeTabs, foundCreativeTabItems);
                 }
                 if (!foundCreativeTabItems.isEmpty()) {
-                    foundMetadata.clear();
-                    for (ItemStack itemStack : foundCreativeTabItems) {
-                        if (foundMetadata.get(itemStack.getMetadata())) continue;
-                        foundMetadata.set(itemStack.getMetadata());
-                        itemStacks.add(itemStack);
-                    }
+                    itemStacks.addAll(foundCreativeTabItems);
                 } else {
                     foundModel.clear();
                     for (int metadata = 0; metadata < Short.MAX_VALUE; metadata++) {
