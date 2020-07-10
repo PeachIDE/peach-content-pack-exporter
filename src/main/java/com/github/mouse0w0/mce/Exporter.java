@@ -64,7 +64,6 @@ public class Exporter implements Runnable {
         FileUtils.createDirectoriesIfNotExists(output);
 
         exportMetadata();
-        exportModMetadata();
         exportItems();
         exportOreDictionary();
         exportLanguage("zh_cn");
@@ -75,6 +74,7 @@ public class Exporter implements Runnable {
     }
 
     private void exportMetadata() throws IOException {
+        System.out.println("Exporting content metadata...");
         ContentPackMetadata metadata = new ContentPackMetadata();
         metadata.setId(modContainer.getModId());
         metadata.setVersion(modContainer.getVersion());
@@ -82,11 +82,8 @@ public class Exporter implements Runnable {
         JsonUtils.writeJson(getOutput().resolve("content.metadata.json"), metadata);
     }
 
-    private void exportModMetadata() throws IOException {
-        JsonUtils.writeJson(getOutput().resolve("content/" + namespace + "/mod.metadata.json"), modContainer.getMetadata());
-    }
-
     private void exportItems() throws IOException {
+        System.out.println("Exporting items...");
         FrameBuffer frameBuffer = new FrameBuffer(64, 64);
         Renderer.getInstance().startRenderItem(frameBuffer);
         Set<ItemData> itemDataList = new LinkedHashSet<>();
@@ -105,6 +102,7 @@ public class Exporter implements Runnable {
     }
 
     private void exportOreDictionary() throws IOException {
+        System.out.println("Exporting ore dictionary...");
         List<OreDictData> oreDictDataList = new ArrayList<>();
         for (String oreName : OreDictionary.getOreNames()) {
             List<OreDictEntry> oreDictEntryList = OreDictionary.getOres(oreName).parallelStream()
@@ -118,6 +116,7 @@ public class Exporter implements Runnable {
     }
 
     private void exportLanguage(String language) throws IOException {
+        System.out.println("Exporting language: " + language);
         String oldLanguage = MinecraftUtils.getLanguage();
         refreshLanguage(language);
         Properties properties = new Properties();
