@@ -100,7 +100,7 @@ public class Exporter implements Runnable {
             if (!itemDataList.add(new ItemData(
                     item.getRegistryName().toString(),
                     itemStack.getMetadata(),
-                    item.getUnlocalizedName(itemStack),
+                    getTranslationKey(itemStack),
                     item instanceof ItemBlock))) continue;
             Renderer.getInstance().renderItemToPNG(frameBuffer, itemStack, getOutput().resolve("content/" + namespace + "/image/item/" + item.getRegistryName().getResourcePath() + "_" + itemStack.getMetadata() + ".png"));
         }
@@ -117,7 +117,7 @@ public class Exporter implements Runnable {
 
             if (!namespace.equals(icon.getItem().getRegistryName().getResourceDomain())) continue;
             creativeTabDataList.add(new CreativeTabData(creativeTabs.getTabLabel(),
-                    creativeTabs.getTranslatedTabLabel(),
+                    getTranslationKey(creativeTabs),
                     com.github.mouse0w0.mce.data.Item.createItem(icon.getItem().getRegistryName().toString(), icon.getMetadata())));
         }
         JsonUtils.writeJson(getOutput().resolve("content/" + namespace + "/creativeTabs.json"), creativeTabDataList);
@@ -146,15 +146,15 @@ public class Exporter implements Runnable {
         for (ItemStack itemStack : collectItems()) {
             Item item = itemStack.getItem();
             if (!namespace.equals(item.getRegistryName().getResourceDomain())) continue;
-            properties.setProperty(item.getUnlocalizedName(itemStack), item.getItemStackDisplayName(itemStack));
+            properties.setProperty(getTranslationKey(itemStack), item.getItemStackDisplayName(itemStack));
         }
 
         for (CreativeTabs creativeTabs : CreativeTabs.CREATIVE_TAB_ARRAY) {
-            if (ignoredCreativeTabs.contains(creativeTabs)) continue;
+            if (ignoredCreativeTabs.contains(creativeTabs.getTabLabel())) continue;
             ItemStack icon = creativeTabs.getIconItemStack();
 
             if (!namespace.equals(icon.getItem().getRegistryName().getResourceDomain())) continue;
-            properties.setProperty(creativeTabs.getTranslatedTabLabel(), I18n.format(creativeTabs.getTranslatedTabLabel()));
+            properties.setProperty(getTranslationKey(creativeTabs), I18n.format(creativeTabs.getTranslatedTabLabel()));
         }
 
         Path languageFile = getOutput().resolve("content/" + namespace + "/lang/" + language.toLowerCase() + ".lang");
@@ -176,6 +176,14 @@ public class Exporter implements Runnable {
     }
 
     private static final Set<String> ignoredCreativeTabs = new HashSet<>(Arrays.asList("search", "inventory", "hotbar"));
+
+    private String getTranslationKey(ItemStack item) {
+        return namespace + ".item." + item.getItem().getRegistryName() + "_" + item.getMetadata();
+    }
+
+    private String getTranslationKey(CreativeTabs creativeTabs) {
+        return namespace + ".itemGroup." + creativeTabs.getTabLabel();
+    }
 
     private static List<ItemStack> collectItems() {
         final IBakedModel missingModel = MinecraftUtils.getModelManager().getMissingModel();
