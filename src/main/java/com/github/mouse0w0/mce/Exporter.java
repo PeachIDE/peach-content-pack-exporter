@@ -102,17 +102,17 @@ public class Exporter implements Runnable {
 
     private void exportCreativeTabs() throws IOException {
         System.out.println("Exporting creative tabs...");
-        List<CreativeTab> creativeTabList = new ArrayList<>();
+        List<CreativeTabData> creativeTabDataList = new ArrayList<>();
         for (CreativeTabs creativeTabs : CreativeTabs.CREATIVE_TAB_ARRAY) {
             if (ignoredCreativeTabs.contains(creativeTabs)) continue;
             ItemStack icon = creativeTabs.getIconItemStack();
 
             if (!namespace.equals(icon.getItem().getRegistryName().getResourceDomain())) continue;
-            creativeTabList.add(new CreativeTab(creativeTabs.getTabLabel(),
+            creativeTabDataList.add(new CreativeTabData(creativeTabs.getTabLabel(),
                     creativeTabs.getTranslatedTabLabel(),
                     com.github.mouse0w0.mce.data.Item.createItem(icon.getItem().getRegistryName().toString(), icon.getMetadata())));
         }
-        JsonUtils.writeJson(getOutput().resolve("content/" + namespace + "/creativeTabs.json"), creativeTabList);
+        JsonUtils.writeJson(getOutput().resolve("content/" + namespace + "/creativeTabs.json"), creativeTabDataList);
     }
 
     private void exportOreDictionary() throws IOException {
