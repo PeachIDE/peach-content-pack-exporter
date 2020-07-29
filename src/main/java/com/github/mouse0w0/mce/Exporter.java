@@ -35,11 +35,15 @@ public class Exporter implements Runnable {
     private final Path output;
     private final Path outputFile;
 
+    private final List<ItemStack> collectedItems;
+
     public Exporter(String namespace, Path outputFile) {
         this.namespace = namespace;
         this.modContainer = Loader.instance().getIndexedModList().get(namespace);
         this.outputFile = outputFile;
         this.output = Paths.get(".export", namespace).toAbsolutePath();
+
+        this.collectedItems = collectItems();
     }
 
     public Path getOutput() {
@@ -94,7 +98,7 @@ public class Exporter implements Runnable {
         FrameBuffer frameBuffer = new FrameBuffer(64, 64);
         Renderer.getInstance().startRenderItem(frameBuffer);
         Set<ItemData> itemDataList = new LinkedHashSet<>();
-        for (ItemStack itemStack : collectItems()) {
+        for (ItemStack itemStack : collectedItems) {
             Item item = itemStack.getItem();
             if (!namespace.equals(item.getRegistryName().getResourceDomain())) continue;
             if (!itemDataList.add(new ItemData(
@@ -143,7 +147,7 @@ public class Exporter implements Runnable {
         refreshLanguage(language);
         Properties properties = new Properties();
 
-        for (ItemStack itemStack : collectItems()) {
+        for (ItemStack itemStack : collectedItems) {
             Item item = itemStack.getItem();
             if (!namespace.equals(item.getRegistryName().getResourceDomain())) continue;
             properties.setProperty(getTranslationKey(itemStack), item.getItemStackDisplayName(itemStack));
@@ -185,32 +189,30 @@ public class Exporter implements Runnable {
         return namespace + ".itemGroup." + creativeTabs.getTabLabel();
     }
 
-    private static List<ItemStack> collectItems() {
+    private List<ItemStack> collectItems() {
         final IBakedModel missingModel = MinecraftUtils.getModelManager().getMissingModel();
         final ItemModelMesher itemModelMesher = Minecraft.getMinecraft().getRenderItem().getItemModelMesher();
 
         List<ItemStack> itemStacks = new ArrayList<>();
 
         NonNullList<ItemStack> foundCreativeTabItems = NonNullList.create();
-        Set<IBakedModel> foundModel = new HashSet<>();
+        Set<String> duplicateNames = new HashSet<>();
         for (Item item : Item.REGISTRY) {
             if (item.getHasSubtypes()) {
                 foundCreativeTabItems.clear();
 
-                for (CreativeTabs creativeTabs : CreativeTabs.CREATIVE_TAB_ARRAY) {
-                    if (ignoredCreativeTabs.contains(creativeTabs.getTabLabel())) continue;
+                for (CreativeTabs creativeTabs : item.getCreativeTabs()) {
                     item.getSubItems(creativeTabs, foundCreativeTabItems);
                 }
                 if (!foundCreativeTabItems.isEmpty()) {
                     itemStacks.addAll(foundCreativeTabItems);
                 } else {
-                    foundModel.clear();
+                    duplicateNames.clear();
                     for (int metadata = 0; metadata < Short.MAX_VALUE; metadata++) {
                         ItemStack itemStack = new ItemStack(item, 1, metadata);
                         IBakedModel model = itemModelMesher.getItemModel(itemStack);
                         if (model == missingModel) break;
-                        if (foundModel.contains(model)) continue;
-                        foundModel.add(model);
+                        if (!duplicateNames.add(getDuplicateCheckName(itemStack, model))) continue;
                         itemStacks.add(itemStack);
                     }
                 }
@@ -219,5 +221,11 @@ public class Exporter implements Runnable {
             }
         }
         return itemStacks;
+    }
+
+    private String getDuplicateCheckName(ItemStack itemStack, IBakedModel model) {
+        Item item = itemStack.getItem();
+        StringBuilder sb = new StringBuilder(item.getItemStackDisplayName(itemStack));
+        return sb.append("@").append(model.hashCode()).toString();
     }
 }
