@@ -3,10 +3,7 @@ package com.github.mouse0w0.mce;
 import com.github.mouse0w0.mce.data.*;
 import com.github.mouse0w0.mce.renderer.FrameBuffer;
 import com.github.mouse0w0.mce.renderer.Renderer;
-import com.github.mouse0w0.mce.util.FileUtils;
-import com.github.mouse0w0.mce.util.JsonUtils;
-import com.github.mouse0w0.mce.util.MinecraftUtils;
-import com.github.mouse0w0.mce.util.ZipUtils;
+import com.github.mouse0w0.mce.util.*;
 import net.minecraft.client.Minecraft;
 import net.minecraft.client.renderer.ItemModelMesher;
 import net.minecraft.client.renderer.block.model.IBakedModel;
@@ -74,10 +71,21 @@ public class Exporter implements Runnable {
 
     private void exportMetadata() throws IOException {
         System.out.println("Exporting content metadata...");
+
         ContentPackMetadata metadata = new ContentPackMetadata();
         metadata.setId(modContainer.getModId());
+        metadata.setName(modContainer.getName());
         metadata.setVersion(modContainer.getVersion());
-        metadata.setMcVersion(Minecraft.getMinecraft().getVersion());
+        metadata.setMcVersion(Loader.MC_VERSION);
+        metadata.setDescription(modContainer.getMetadata().description);
+        metadata.setUrl(modContainer.getMetadata().url);
+        metadata.setAuthors(modContainer.getMetadata().authorList);
+
+        Map<String, Object> descriptor = ReflectionUtils.getDeclaredValue(modContainer, "descriptor");
+        if (descriptor != null) {
+            metadata.setDependencies((String) descriptor.get("dependencies"));
+        }
+
         JsonUtils.writeJson(getOutput().resolve("content.metadata.json"), metadata);
     }
 

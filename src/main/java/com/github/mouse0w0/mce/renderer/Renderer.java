@@ -1,6 +1,6 @@
 package com.github.mouse0w0.mce.renderer;
 
-import com.github.mouse0w0.mce.util.Utils;
+import com.github.mouse0w0.mce.util.ImageUtils;
 import net.minecraft.client.Minecraft;
 import net.minecraft.client.renderer.GlStateManager;
 import net.minecraft.client.renderer.RenderHelper;
@@ -33,7 +33,7 @@ public class Renderer {
     public void renderItemToPNG(FrameBuffer frameBuffer, ItemStack itemStack, Path file) throws IOException {
         GL11.glClear(GL11.GL_COLOR_BUFFER_BIT | GL11.GL_DEPTH_BUFFER_BIT);
         renderItem.renderItemIntoGUI(itemStack, 0, 0);
-        Utils.writePNGImage(frameBuffer.readPixels(), file);
+        ImageUtils.writePNGImage(frameBuffer.readPixels(), file);
     }
 
     public BufferedImage renderItem(FrameBuffer frameBuffer, ItemStack itemStack) {
