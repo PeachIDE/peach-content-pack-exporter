@@ -1,9 +1,6 @@
 package com.github.mouse0w0.mce;
 
-import com.github.mouse0w0.mce.data.ContentPackMetadata;
-import com.github.mouse0w0.mce.data.ItemData;
-import com.github.mouse0w0.mce.data.OreDictData;
-import com.github.mouse0w0.mce.data.OreDictEntry;
+import com.github.mouse0w0.mce.data.*;
 import com.github.mouse0w0.mce.renderer.FrameBuffer;
 import com.github.mouse0w0.mce.renderer.Renderer;
 import com.github.mouse0w0.mce.util.FileUtils;
@@ -13,6 +10,7 @@ import com.github.mouse0w0.mce.util.ZipUtils;
 import net.minecraft.client.Minecraft;
 import net.minecraft.client.renderer.ItemModelMesher;
 import net.minecraft.client.renderer.block.model.IBakedModel;
+import net.minecraft.client.resources.I18n;
 import net.minecraft.client.resources.Language;
 import net.minecraft.creativetab.CreativeTabs;
 import net.minecraft.item.Item;
@@ -65,6 +63,7 @@ public class Exporter implements Runnable {
 
         exportMetadata();
         exportItems();
+        exportCreativeTabs();
         exportOreDictionary();
         exportLanguage("zh_cn");
         exportLanguage("en_us");
@@ -101,6 +100,21 @@ public class Exporter implements Runnable {
         Renderer.getInstance().endRenderItem(frameBuffer);
     }
 
+    private void exportCreativeTabs() throws IOException {
+        System.out.println("Exporting creative tabs...");
+        List<CreativeTab> creativeTabList = new ArrayList<>();
+        for (CreativeTabs creativeTabs : CreativeTabs.CREATIVE_TAB_ARRAY) {
+            if (ignoredCreativeTabs.contains(creativeTabs)) continue;
+            ItemStack icon = creativeTabs.getIconItemStack();
+
+            if (!namespace.equals(icon.getItem().getRegistryName().getResourceDomain())) continue;
+            creativeTabList.add(new CreativeTab(creativeTabs.getTabLabel(),
+                    creativeTabs.getTranslatedTabLabel(),
+                    com.github.mouse0w0.mce.data.Item.createItem(icon.getItem().getRegistryName().toString(), icon.getMetadata())));
+        }
+        JsonUtils.writeJson(getOutput().resolve("content/" + namespace + "/creativeTabs.json"), creativeTabList);
+    }
+
     private void exportOreDictionary() throws IOException {
         System.out.println("Exporting ore dictionary...");
         List<OreDictData> oreDictDataList = new ArrayList<>();
@@ -120,11 +134,21 @@ public class Exporter implements Runnable {
         String oldLanguage = MinecraftUtils.getLanguage();
         refreshLanguage(language);
         Properties properties = new Properties();
+
         for (ItemStack itemStack : collectItems()) {
             Item item = itemStack.getItem();
             if (!namespace.equals(item.getRegistryName().getResourceDomain())) continue;
             properties.setProperty(item.getUnlocalizedName(itemStack), item.getItemStackDisplayName(itemStack));
         }
+
+        for (CreativeTabs creativeTabs : CreativeTabs.CREATIVE_TAB_ARRAY) {
+            if (ignoredCreativeTabs.contains(creativeTabs)) continue;
+            ItemStack icon = creativeTabs.getIconItemStack();
+
+            if (!namespace.equals(icon.getItem().getRegistryName().getResourceDomain())) continue;
+            properties.setProperty(creativeTabs.getTranslatedTabLabel(), I18n.format(creativeTabs.getTranslatedTabLabel()));
+        }
+
         Path languageFile = getOutput().resolve("content/" + namespace + "/lang/" + language.toLowerCase() + ".lang");
         FileUtils.createFileIfNotExists(languageFile);
         try (BufferedWriter writer = Files.newBufferedWriter(languageFile)) {
