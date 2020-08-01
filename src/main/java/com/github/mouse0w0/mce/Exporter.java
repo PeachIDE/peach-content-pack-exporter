@@ -182,7 +182,7 @@ public class Exporter implements Runnable {
     private static final Set<String> ignoredCreativeTabs = new HashSet<>(Arrays.asList("search", "inventory", "hotbar"));
 
     private String getTranslationKey(ItemStack item) {
-        return namespace + ".item." + item.getItem().getRegistryName() + "_" + item.getMetadata();
+        return namespace + ".item." + item.getItem().getRegistryName().getResourcePath() + "_" + item.getMetadata();
     }
 
     private String getTranslationKey(CreativeTabs creativeTabs) {
