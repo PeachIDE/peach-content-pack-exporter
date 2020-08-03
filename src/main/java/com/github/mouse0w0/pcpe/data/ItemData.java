@@ -1,4 +1,4 @@
-package com.github.mouse0w0.mce.data;
+package com.github.mouse0w0.pcpe.data;
 
 import java.util.Objects;
 

@@ -1,6 +1,6 @@
-package com.github.mouse0w0.mce.renderer;
+package com.github.mouse0w0.pcpe.renderer;
 
-import com.github.mouse0w0.mce.util.ImageUtils;
+import com.github.mouse0w0.pcpe.util.ImageUtils;
 import net.minecraft.client.Minecraft;
 import net.minecraft.client.renderer.GlStateManager;
 import net.minecraft.client.renderer.RenderHelper;

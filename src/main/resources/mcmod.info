@@ -1,7 +1,7 @@
 [
   {
-    "modid": "mce",
-    "name": "Minecraft Content Exporter",
+    "modid": "pcpe",
+    "name": "Peach Content Pack Exporter",
     "description": "",
     "version": "${version}",
     "mcversion": "${mcversion}",

@@ -1,4 +1,4 @@
-package com.github.mouse0w0.mce.renderer;
+package com.github.mouse0w0.pcpe.renderer;
 
 import org.lwjgl.opengl.GL11;
 

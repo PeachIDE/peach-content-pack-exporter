@@ -1,9 +1,9 @@
-package com.github.mouse0w0.mce;
+package com.github.mouse0w0.pcpe;
 
-import com.github.mouse0w0.mce.data.*;
-import com.github.mouse0w0.mce.renderer.FrameBuffer;
-import com.github.mouse0w0.mce.renderer.Renderer;
-import com.github.mouse0w0.mce.util.*;
+import com.github.mouse0w0.pcpe.data.*;
+import com.github.mouse0w0.pcpe.renderer.FrameBuffer;
+import com.github.mouse0w0.pcpe.renderer.Renderer;
+import com.github.mouse0w0.pcpe.util.*;
 import net.minecraft.client.Minecraft;
 import net.minecraft.client.renderer.ItemModelMesher;
 import net.minecraft.client.renderer.block.model.IBakedModel;
@@ -122,7 +122,7 @@ public class Exporter implements Runnable {
             if (!namespace.equals(icon.getItem().getRegistryName().getResourceDomain())) continue;
             creativeTabDataList.add(new CreativeTabData(creativeTabs.getTabLabel(),
                     getTranslationKey(creativeTabs),
-                    com.github.mouse0w0.mce.data.Item.createItem(icon.getItem().getRegistryName().toString(), icon.getMetadata())));
+                    com.github.mouse0w0.pcpe.data.Item.createItem(icon.getItem().getRegistryName().toString(), icon.getMetadata())));
         }
         JsonUtils.writeJson(getOutput().resolve("content/" + namespace + "/creativeTabs.json"), creativeTabDataList);
     }

@@ -1,11 +1,11 @@
-package com.github.mouse0w0.mce.renderer;
+package com.github.mouse0w0.pcpe.renderer;
 
-import com.github.mouse0w0.mce.MCE;
+import com.github.mouse0w0.pcpe.PCPE;
 import net.minecraftforge.fml.common.Mod;
 import net.minecraftforge.fml.common.eventhandler.SubscribeEvent;
 import net.minecraftforge.fml.common.gameevent.TickEvent;
 
-@Mod.EventBusSubscriber(modid = MCE.MOD_ID)
+@Mod.EventBusSubscriber(modid = PCPE.MOD_ID)
 public class RenderListener {
 
     @SubscribeEvent

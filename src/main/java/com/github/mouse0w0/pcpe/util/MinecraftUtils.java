@@ -1,4 +1,4 @@
-package com.github.mouse0w0.mce.util;
+package com.github.mouse0w0.pcpe.util;
 
 import net.minecraft.client.Minecraft;
 import net.minecraft.client.renderer.block.model.ModelManager;

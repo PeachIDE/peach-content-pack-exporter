@@ -1,6 +1,6 @@
-package com.github.mouse0w0.mce.gui;
+package com.github.mouse0w0.pcpe.gui;
 
-import com.github.mouse0w0.mce.MCE;
+import com.github.mouse0w0.pcpe.PCPE;
 import net.minecraft.client.gui.GuiButton;
 import net.minecraft.client.gui.GuiIngameMenu;
 import net.minecraft.client.gui.GuiMainMenu;
@@ -10,7 +10,7 @@ import net.minecraftforge.client.event.GuiScreenEvent;
 import net.minecraftforge.fml.common.Mod;
 import net.minecraftforge.fml.common.eventhandler.SubscribeEvent;
 
-@Mod.EventBusSubscriber(modid = MCE.MOD_ID)
+@Mod.EventBusSubscriber(modid = PCPE.MOD_ID)
 public class GuiListener {
 
     private static final int EXPORT_BUTTON_ID = 0xE0202;
@@ -19,7 +19,7 @@ public class GuiListener {
     public static void postInitGui(GuiScreenEvent.InitGuiEvent.Post event) {
         GuiScreen gui = event.getGui();
         if (GuiMainMenu.class.equals(gui.getClass()) || GuiIngameMenu.class.equals(gui.getClass())) {
-            event.getButtonList().add(new GuiButton(EXPORT_BUTTON_ID, 0, 0, 60, 20, I18n.format("mce.gui.export")));
+            event.getButtonList().add(new GuiButton(EXPORT_BUTTON_ID, 0, 0, 60, 20, I18n.format("pcpe.gui.export")));
         }
     }
 

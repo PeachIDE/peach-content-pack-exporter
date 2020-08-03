@@ -1,4 +1,4 @@
-package com.github.mouse0w0.mce.util;
+package com.github.mouse0w0.pcpe.util;
 
 import org.apache.commons.io.IOUtils;
 
