@@ -64,7 +64,7 @@ public class Exporter implements Runnable {
 
         exportMetadata();
         exportItems();
-        exportCreativeTabs();
+        exportItemGroups();
         exportOreDictionary();
         exportLanguage("zh_cn");
         exportLanguage("en_us");
@@ -112,19 +112,19 @@ public class Exporter implements Runnable {
         Renderer.getInstance().endRenderItem(frameBuffer);
     }
 
-    private void exportCreativeTabs() throws IOException {
-        System.out.println("Exporting creative tabs...");
-        List<CreativeTabData> creativeTabDataList = new ArrayList<>();
-        for (CreativeTabs creativeTabs : CreativeTabs.CREATIVE_TAB_ARRAY) {
-            if (ignoredCreativeTabs.contains(creativeTabs)) continue;
-            ItemStack icon = creativeTabs.getIconItemStack();
+    private void exportItemGroups() throws IOException {
+        System.out.println("Exporting item groups...");
+        List<ItemGroupData> itemGroupList = new ArrayList<>();
+        for (CreativeTabs itemGroup : CreativeTabs.CREATIVE_TAB_ARRAY) {
+            if (ignoredItemGroups.contains(itemGroup.getTabLabel())) continue;
+            ItemStack icon = itemGroup.getIconItemStack();
 
             if (!namespace.equals(icon.getItem().getRegistryName().getResourceDomain())) continue;
-            creativeTabDataList.add(new CreativeTabData(creativeTabs.getTabLabel(),
-                    getTranslationKey(creativeTabs),
+            itemGroupList.add(new ItemGroupData(itemGroup.getTabLabel(),
+                    getTranslationKey(itemGroup),
                     com.github.mouse0w0.pcpe.data.Item.createItem(icon.getItem().getRegistryName().toString(), icon.getMetadata())));
         }
-        JsonUtils.writeJson(getOutput().resolve("content/" + namespace + "/creativeTabs.json"), creativeTabDataList);
+        JsonUtils.writeJson(getOutput().resolve("content/" + namespace + "/itemGroups.json"), itemGroupList);
     }
 
     private void exportOreDictionary() throws IOException {
@@ -154,7 +154,7 @@ public class Exporter implements Runnable {
         }
 
         for (CreativeTabs creativeTabs : CreativeTabs.CREATIVE_TAB_ARRAY) {
-            if (ignoredCreativeTabs.contains(creativeTabs.getTabLabel())) continue;
+            if (ignoredItemGroups.contains(creativeTabs.getTabLabel())) continue;
             ItemStack icon = creativeTabs.getIconItemStack();
 
             if (!namespace.equals(icon.getItem().getRegistryName().getResourceDomain())) continue;
@@ -179,7 +179,7 @@ public class Exporter implements Runnable {
         FMLClientHandler.instance().refreshResources(VanillaResourceType.LANGUAGES);
     }
 
-    private static final Set<String> ignoredCreativeTabs = new HashSet<>(Arrays.asList("search", "inventory", "hotbar"));
+    private static final Set<String> ignoredItemGroups = new HashSet<>(Arrays.asList("search", "inventory", "hotbar"));
 
     private String getTranslationKey(ItemStack item) {
         return namespace + ".item." + item.getItem().getRegistryName().getResourcePath() + "_" + item.getMetadata();
