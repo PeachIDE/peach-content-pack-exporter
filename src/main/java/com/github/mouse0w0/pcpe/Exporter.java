@@ -124,7 +124,7 @@ public class Exporter implements Runnable {
                     getTranslationKey(itemGroup),
                     com.github.mouse0w0.pcpe.data.Item.createItem(icon.getItem().getRegistryName().toString(), icon.getMetadata())));
         }
-        JsonUtils.writeJson(getOutput().resolve("content/" + namespace + "/itemGroups.json"), itemGroupList);
+        JsonUtils.writeJson(getOutput().resolve("content/" + namespace + "/itemGroup.json"), itemGroupList);
     }
 
     private void exportOreDictionary() throws IOException {
