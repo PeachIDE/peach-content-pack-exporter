@@ -122,7 +122,7 @@ public class Exporter implements Runnable {
             if (!namespace.equals(icon.getItem().getRegistryName().getResourceDomain())) continue;
             itemGroupList.add(new ItemGroupData(itemGroup.getTabLabel(),
                     getTranslationKey(itemGroup),
-                    com.github.mouse0w0.pcpe.data.Item.createItem(icon.getItem().getRegistryName().toString(), icon.getMetadata())));
+                    ItemRef.createItem(icon.getItem().getRegistryName().toString(), icon.getMetadata())));
         }
         JsonUtils.writeJson(getOutput().resolve("content/" + namespace + "/itemGroup.json"), itemGroupList);
     }
@@ -131,12 +131,12 @@ public class Exporter implements Runnable {
         System.out.println("Exporting ore dictionary...");
         List<OreDictData> oreDictDataList = new ArrayList<>();
         for (String oreName : OreDictionary.getOreNames()) {
-            List<OreDictEntry> oreDictEntryList = OreDictionary.getOres(oreName).parallelStream()
+            List<ItemRef> entries = OreDictionary.getOres(oreName).parallelStream()
                     .filter(itemStack -> namespace.equals(itemStack.getItem().getRegistryName().getResourceDomain()))
-                    .map(itemStack -> new OreDictEntry(itemStack.getItem().getRegistryName().toString(), itemStack.getMetadata()))
+                    .map(itemStack -> ItemRef.createItem(itemStack.getItem().getRegistryName().toString(), itemStack.getMetadata()))
                     .collect(Collectors.toList());
-            if (oreDictEntryList.isEmpty()) continue;
-            oreDictDataList.add(new OreDictData(oreName, oreDictEntryList));
+            if (entries.isEmpty()) continue;
+            oreDictDataList.add(new OreDictData(oreName, entries));
         }
         JsonUtils.writeJson(getOutput().resolve("content/" + namespace + "/oreDictionary.json"), oreDictDataList);
     }

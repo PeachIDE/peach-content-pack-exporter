@@ -4,9 +4,9 @@ public class ItemGroupData {
 
     private String id;
     private String translationKey;
-    private Item item;
+    private ItemRef item;
 
-    public ItemGroupData(String id, String translationKey, Item item) {
+    public ItemGroupData(String id, String translationKey, ItemRef item) {
         this.id = id;
         this.translationKey = translationKey;
         this.item = item;

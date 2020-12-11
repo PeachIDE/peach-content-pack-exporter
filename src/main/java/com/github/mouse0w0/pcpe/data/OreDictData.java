@@ -5,9 +5,9 @@ import java.util.List;
 public class OreDictData {
 
     private String id;
-    private List<OreDictEntry> entries;
+    private List<ItemRef> entries;
 
-    public OreDictData(String id, List<OreDictEntry> entries) {
+    public OreDictData(String id, List<ItemRef> entries) {
         this.id = id;
         this.entries = entries;
     }
@@ -16,7 +16,7 @@ public class OreDictData {
         return id;
     }
 
-    public List<OreDictEntry> getEntries() {
+    public List<ItemRef> getEntries() {
         return entries;
     }
 }
