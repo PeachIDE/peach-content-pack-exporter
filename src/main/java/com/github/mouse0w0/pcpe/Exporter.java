@@ -10,6 +10,7 @@ import net.minecraft.client.renderer.block.model.IBakedModel;
 import net.minecraft.client.resources.I18n;
 import net.minecraft.client.resources.Language;
 import net.minecraft.creativetab.CreativeTabs;
+import net.minecraft.enchantment.Enchantment;
 import net.minecraft.item.Item;
 import net.minecraft.item.ItemBlock;
 import net.minecraft.item.ItemStack;
@@ -66,6 +67,7 @@ public class Exporter implements Runnable {
         exportItems();
         exportItemGroups();
         exportOreDictionary();
+        exportEnchantments();
         exportLanguage("zh_cn");
         exportLanguage("en_us");
 
@@ -141,6 +143,16 @@ public class Exporter implements Runnable {
         JsonUtils.writeJson(getOutput().resolve("content/" + namespace + "/oreDictionary.json"), oreDictDataList);
     }
 
+    private void exportEnchantments() throws IOException {
+        System.out.println("Exporting enchantments...");
+        List<EnchantmentData> dataList = new ArrayList<>();
+        for (Enchantment enchantment : Enchantment.REGISTRY) {
+            if (!namespace.equals(enchantment.getRegistryName().getResourceDomain())) continue;
+            dataList.add(new EnchantmentData(enchantment.getRegistryName().toString(), getTranslationKey(enchantment)));
+        }
+        JsonUtils.writeJson(getOutput().resolve("content/" + namespace + "/enchantment.json"), dataList);
+    }
+
     private void exportLanguage(String language) throws IOException {
         System.out.println("Exporting language: " + language);
         String oldLanguage = MinecraftUtils.getLanguage();
@@ -159,6 +171,11 @@ public class Exporter implements Runnable {
 
             if (!namespace.equals(icon.getItem().getRegistryName().getResourceDomain())) continue;
             properties.setProperty(getTranslationKey(creativeTabs), I18n.format(creativeTabs.getTranslatedTabLabel()));
+        }
+
+        for (Enchantment enchantment : Enchantment.REGISTRY) {
+            if (!namespace.equals(enchantment.getRegistryName().getResourceDomain())) continue;
+            properties.setProperty(getTranslationKey(enchantment), I18n.format(enchantment.getName()));
         }
 
         Path languageFile = getOutput().resolve("content/" + namespace + "/lang/" + language.toLowerCase() + ".lang");
@@ -187,6 +204,10 @@ public class Exporter implements Runnable {
 
     private String getTranslationKey(CreativeTabs creativeTabs) {
         return namespace + ".itemGroup." + creativeTabs.getTabLabel();
+    }
+
+    private String getTranslationKey(Enchantment enchantment) {
+        return namespace + ".enchantment." + enchantment.getRegistryName().getResourcePath();
     }
 
     private List<ItemStack> collectItems() {
