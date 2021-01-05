@@ -1,25 +1,16 @@
 package com.github.mouse0w0.pcpe;
 
-import com.github.mouse0w0.pcpe.data.*;
-import com.github.mouse0w0.pcpe.renderer.FrameBuffer;
-import com.github.mouse0w0.pcpe.renderer.Renderer;
+import com.github.mouse0w0.pcpe.data.ContentPackMetadata;
+import com.github.mouse0w0.pcpe.generator.*;
 import com.github.mouse0w0.pcpe.util.*;
 import net.minecraft.client.Minecraft;
-import net.minecraft.client.renderer.ItemModelMesher;
-import net.minecraft.client.renderer.block.model.IBakedModel;
-import net.minecraft.client.resources.I18n;
 import net.minecraft.client.resources.Language;
-import net.minecraft.creativetab.CreativeTabs;
-import net.minecraft.enchantment.Enchantment;
-import net.minecraft.item.Item;
-import net.minecraft.item.ItemBlock;
-import net.minecraft.item.ItemStack;
-import net.minecraft.util.NonNullList;
 import net.minecraftforge.client.resource.VanillaResourceType;
 import net.minecraftforge.fml.client.FMLClientHandler;
 import net.minecraftforge.fml.common.Loader;
 import net.minecraftforge.fml.common.ModContainer;
-import net.minecraftforge.oredict.OreDictionary;
+import org.apache.logging.log4j.LogManager;
+import org.apache.logging.log4j.Logger;
 
 import java.io.BufferedWriter;
 import java.io.IOException;
@@ -27,16 +18,17 @@ import java.nio.file.Files;
 import java.nio.file.Path;
 import java.nio.file.Paths;
 import java.util.*;
-import java.util.stream.Collectors;
 
 public class Exporter implements Runnable {
+
+    private final Logger logger = LogManager.getLogger(PCPE.MOD_ID);
 
     private final String namespace;
     private final ModContainer modContainer;
     private final Path output;
     private final Path outputFile;
 
-    private final List<ItemStack> collectedItems;
+    private final List<DataGenerator> generators = new ArrayList<>();
 
     public Exporter(String namespace, Path outputFile) {
         this.namespace = namespace;
@@ -44,39 +36,72 @@ public class Exporter implements Runnable {
         this.outputFile = outputFile;
         this.output = Paths.get(".export", namespace).toAbsolutePath();
 
-        this.collectedItems = collectItems();
+        generators.add(new ItemGenerator());
+        generators.add(new ItemGroupGenerator());
+        generators.add(new OreDictGenerator());
+        generators.add(new EnchantmentGenerator());
+    }
+
+    public Logger getLogger() {
+        return logger;
+    }
+
+    public String getNamespace() {
+        return namespace;
     }
 
     public Path getOutput() {
         return output;
     }
 
+    public void writeJson(String path, Object value) {
+        Path file = getOutput().resolve(path);
+        try {
+            JsonUtils.writeJson(file, value);
+        } catch (IOException e) {
+            logger.error("Caught an exception when write to " + file, e);
+        }
+    }
+
     public void run() {
         try {
             doExport();
         } catch (Exception e) {
-            e.printStackTrace();
+            logger.error("Failed to export: " + namespace, e);
         }
     }
 
     private void doExport() throws Exception {
-        System.out.println("Exporting content from namespace: " + namespace);
+        logger.info("Exporting content pack from namespace: " + namespace);
         FileUtils.createDirectoriesIfNotExists(output);
 
+        logger.info("Exporting metadata...");
         exportMetadata();
-        exportItems();
-        exportItemGroups();
-        exportOreDictionary();
-        exportEnchantments();
+
+        logger.info("Collecting data...");
+        for (DataGenerator generator : generators) {
+            generator.collectData(this);
+        }
+
+        logger.info("Exporting data...");
+        for (DataGenerator generator : generators) {
+            generator.exportData(this);
+        }
+
+        logger.info("Exporting l10n...");
+        String oldLanguage = MinecraftUtils.getLanguage();
         exportLanguage("zh_cn");
         exportLanguage("en_us");
+        setLanguage(oldLanguage);
 
+        logger.info("Zipping content pack...");
         ZipUtils.zip(outputFile, output);
-        System.out.println("Completed export content to " + outputFile);
+
+        logger.info("Exported content pack to " + outputFile);
     }
 
     private void exportMetadata() throws IOException {
-        System.out.println("Exporting content metadata...");
+
 
         ContentPackMetadata metadata = new ContentPackMetadata();
         metadata.setId(modContainer.getModId());
@@ -95,98 +120,34 @@ public class Exporter implements Runnable {
         JsonUtils.writeJson(getOutput().resolve("content.metadata.json"), metadata);
     }
 
-    private void exportItems() throws IOException {
-        System.out.println("Exporting items...");
-        FrameBuffer frameBuffer = new FrameBuffer(64, 64);
-        Renderer.getInstance().startRenderItem(frameBuffer);
-        Set<ItemData> itemDataList = new LinkedHashSet<>();
-        for (ItemStack itemStack : collectedItems) {
-            Item item = itemStack.getItem();
-            if (!namespace.equals(item.getRegistryName().getResourceDomain())) continue;
-            if (!itemDataList.add(new ItemData(
-                    item.getRegistryName().toString(),
-                    itemStack.getMetadata(),
-                    getTranslationKey(itemStack),
-                    item instanceof ItemBlock))) continue;
-            Renderer.getInstance().renderItemToPNG(frameBuffer, itemStack, getOutput().resolve("content/" + namespace + "/image/item/" + item.getRegistryName().getResourcePath() + "_" + itemStack.getMetadata() + ".png"));
-        }
-        JsonUtils.writeJson(getOutput().resolve("content/" + namespace + "/item.json"), itemDataList);
-        Renderer.getInstance().endRenderItem(frameBuffer);
-    }
-
-    private void exportItemGroups() throws IOException {
-        System.out.println("Exporting item groups...");
-        List<ItemGroupData> itemGroupList = new ArrayList<>();
-        for (CreativeTabs itemGroup : CreativeTabs.CREATIVE_TAB_ARRAY) {
-            if (ignoredItemGroups.contains(itemGroup.getTabLabel())) continue;
-            ItemStack icon = itemGroup.getIconItemStack();
-
-            if (!namespace.equals(icon.getItem().getRegistryName().getResourceDomain())) continue;
-            itemGroupList.add(new ItemGroupData(itemGroup.getTabLabel(),
-                    getTranslationKey(itemGroup),
-                    ItemRef.createItem(icon.getItem().getRegistryName().toString(), icon.getMetadata())));
-        }
-        JsonUtils.writeJson(getOutput().resolve("content/" + namespace + "/itemGroup.json"), itemGroupList);
-    }
-
-    private void exportOreDictionary() throws IOException {
-        System.out.println("Exporting ore dictionary...");
-        List<OreDictData> oreDictDataList = new ArrayList<>();
-        for (String oreName : OreDictionary.getOreNames()) {
-            List<ItemRef> entries = OreDictionary.getOres(oreName).parallelStream()
-                    .filter(itemStack -> namespace.equals(itemStack.getItem().getRegistryName().getResourceDomain()))
-                    .map(itemStack -> ItemRef.createItem(itemStack.getItem().getRegistryName().toString(), itemStack.getMetadata()))
-                    .collect(Collectors.toList());
-            if (entries.isEmpty()) continue;
-            oreDictDataList.add(new OreDictData(oreName, entries));
-        }
-        JsonUtils.writeJson(getOutput().resolve("content/" + namespace + "/oreDictionary.json"), oreDictDataList);
-    }
-
-    private void exportEnchantments() throws IOException {
-        System.out.println("Exporting enchantments...");
-        List<EnchantmentData> dataList = new ArrayList<>();
-        for (Enchantment enchantment : Enchantment.REGISTRY) {
-            if (!namespace.equals(enchantment.getRegistryName().getResourceDomain())) continue;
-            dataList.add(new EnchantmentData(enchantment.getRegistryName().toString(), getTranslationKey(enchantment)));
-        }
-        JsonUtils.writeJson(getOutput().resolve("content/" + namespace + "/enchantment.json"), dataList);
-    }
-
     private void exportLanguage(String language) throws IOException {
         System.out.println("Exporting language: " + language);
-        String oldLanguage = MinecraftUtils.getLanguage();
-        refreshLanguage(language);
-        Properties properties = new Properties();
+        setLanguage(language);
+        Map<String, String> map = new LinkedHashMap<>();
 
-        for (ItemStack itemStack : collectedItems) {
-            Item item = itemStack.getItem();
-            if (!namespace.equals(item.getRegistryName().getResourceDomain())) continue;
-            properties.setProperty(getTranslationKey(itemStack), item.getItemStackDisplayName(itemStack));
+        for (DataGenerator generator : generators) {
+            generator.exportL10n(this, map);
         }
 
-        for (CreativeTabs creativeTabs : CreativeTabs.CREATIVE_TAB_ARRAY) {
-            if (ignoredItemGroups.contains(creativeTabs.getTabLabel())) continue;
-            ItemStack icon = creativeTabs.getIconItemStack();
-
-            if (!namespace.equals(icon.getItem().getRegistryName().getResourceDomain())) continue;
-            properties.setProperty(getTranslationKey(creativeTabs), I18n.format(creativeTabs.getTranslatedTabLabel()));
+        Path file = getOutput().resolve("content/" + namespace + "/lang/" + language.toLowerCase() + ".lang");
+        FileUtils.createFileIfNotExists(file);
+        try (BufferedWriter bw = Files.newBufferedWriter(file)) {
+            bw.write("#Generated by Peach Content Pack Exporter");
+            bw.newLine();
+            bw.write("#" + new Date().toString());
+            bw.newLine();
+            for (String key : map.keySet()) {
+                String val = map.get(key);
+                key = saveConvert(key, true, true);
+                val = saveConvert(val, false, true);
+                bw.write(key + "=" + val);
+                bw.newLine();
+            }
+            bw.flush();
         }
-
-        for (Enchantment enchantment : Enchantment.REGISTRY) {
-            if (!namespace.equals(enchantment.getRegistryName().getResourceDomain())) continue;
-            properties.setProperty(getTranslationKey(enchantment), I18n.format(enchantment.getName()));
-        }
-
-        Path languageFile = getOutput().resolve("content/" + namespace + "/lang/" + language.toLowerCase() + ".lang");
-        FileUtils.createFileIfNotExists(languageFile);
-        try (BufferedWriter writer = Files.newBufferedWriter(languageFile)) {
-            properties.store(writer, "Generated by MinecraftContentExporter");
-        }
-        refreshLanguage(oldLanguage);
     }
 
-    private static void refreshLanguage(String locale) {
+    private static void setLanguage(String locale) {
         Minecraft minecraft = Minecraft.getMinecraft();
 
         if (minecraft.gameSettings.language.equals(locale)) return;
@@ -196,57 +157,79 @@ public class Exporter implements Runnable {
         FMLClientHandler.instance().refreshResources(VanillaResourceType.LANGUAGES);
     }
 
-    private static final Set<String> ignoredItemGroups = new HashSet<>(Arrays.asList("search", "inventory", "hotbar"));
+    private static String saveConvert(String theString,
+                                      boolean escapeSpace,
+                                      boolean escapeUnicode) {
+        int len = theString.length();
+        int bufLen = len * 2;
+        if (bufLen < 0) {
+            bufLen = Integer.MAX_VALUE;
+        }
+        StringBuffer outBuffer = new StringBuffer(bufLen);
 
-    private String getTranslationKey(ItemStack item) {
-        return namespace + ".item." + item.getItem().getRegistryName().getResourcePath() + "_" + item.getMetadata();
-    }
-
-    private String getTranslationKey(CreativeTabs creativeTabs) {
-        return namespace + ".itemGroup." + creativeTabs.getTabLabel();
-    }
-
-    private String getTranslationKey(Enchantment enchantment) {
-        return namespace + ".enchantment." + enchantment.getRegistryName().getResourcePath();
-    }
-
-    private List<ItemStack> collectItems() {
-        final IBakedModel missingModel = MinecraftUtils.getModelManager().getMissingModel();
-        final ItemModelMesher itemModelMesher = Minecraft.getMinecraft().getRenderItem().getItemModelMesher();
-
-        List<ItemStack> itemStacks = new ArrayList<>();
-
-        NonNullList<ItemStack> foundCreativeTabItems = NonNullList.create();
-        Set<String> duplicateNames = new HashSet<>();
-        for (Item item : Item.REGISTRY) {
-            if (item.getHasSubtypes()) {
-                foundCreativeTabItems.clear();
-
-                for (CreativeTabs creativeTabs : item.getCreativeTabs()) {
-                    item.getSubItems(creativeTabs, foundCreativeTabItems);
+        for (int x = 0; x < len; x++) {
+            char aChar = theString.charAt(x);
+            // Handle common case first, selecting largest block that
+            // avoids the specials below
+            if ((aChar > 61) && (aChar < 127)) {
+                if (aChar == '\\') {
+                    outBuffer.append('\\');
+                    outBuffer.append('\\');
+                    continue;
                 }
-                if (!foundCreativeTabItems.isEmpty()) {
-                    itemStacks.addAll(foundCreativeTabItems);
-                } else {
-                    duplicateNames.clear();
-                    for (int metadata = 0; metadata < Short.MAX_VALUE; metadata++) {
-                        ItemStack itemStack = new ItemStack(item, 1, metadata);
-                        IBakedModel model = itemModelMesher.getItemModel(itemStack);
-                        if (model == missingModel) break;
-                        if (!duplicateNames.add(getDuplicateCheckName(itemStack, model))) continue;
-                        itemStacks.add(itemStack);
+                outBuffer.append(aChar);
+                continue;
+            }
+            switch (aChar) {
+                case ' ':
+                    if (x == 0 || escapeSpace)
+                        outBuffer.append('\\');
+                    outBuffer.append(' ');
+                    break;
+                case '\t':
+                    outBuffer.append('\\');
+                    outBuffer.append('t');
+                    break;
+                case '\n':
+                    outBuffer.append('\\');
+                    outBuffer.append('n');
+                    break;
+                case '\r':
+                    outBuffer.append('\\');
+                    outBuffer.append('r');
+                    break;
+                case '\f':
+                    outBuffer.append('\\');
+                    outBuffer.append('f');
+                    break;
+                case '=': // Fall through
+                case ':': // Fall through
+                case '#': // Fall through
+                case '!':
+                    outBuffer.append('\\');
+                    outBuffer.append(aChar);
+                    break;
+                default:
+                    if (((aChar < 0x0020) || (aChar > 0x007e)) & escapeUnicode) {
+                        outBuffer.append('\\');
+                        outBuffer.append('u');
+                        outBuffer.append(toHex((aChar >> 12) & 0xF));
+                        outBuffer.append(toHex((aChar >> 8) & 0xF));
+                        outBuffer.append(toHex((aChar >> 4) & 0xF));
+                        outBuffer.append(toHex(aChar & 0xF));
+                    } else {
+                        outBuffer.append(aChar);
                     }
-                }
-            } else {
-                itemStacks.add(new ItemStack(item));
             }
         }
-        return itemStacks;
+        return outBuffer.toString();
     }
 
-    private String getDuplicateCheckName(ItemStack itemStack, IBakedModel model) {
-        Item item = itemStack.getItem();
-        StringBuilder sb = new StringBuilder(item.getItemStackDisplayName(itemStack));
-        return sb.append("@").append(model.hashCode()).toString();
+    private static char toHex(int nibble) {
+        return hexDigit[(nibble & 0xF)];
     }
+
+    private static final char[] hexDigit = {
+            '0', '1', '2', '3', '4', '5', '6', '7', '8', '9', 'A', 'B', 'C', 'D', 'E', 'F'
+    };
 }
