@@ -40,6 +40,7 @@ public class Exporter implements Runnable {
         generators.add(new ItemGroupGenerator());
         generators.add(new OreDictGenerator());
         generators.add(new EnchantmentGenerator());
+        generators.add(new SoundEventGenerator());
     }
 
     public Logger getLogger() {
