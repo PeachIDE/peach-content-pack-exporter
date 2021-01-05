@@ -138,8 +138,8 @@ public class Exporter implements Runnable {
             bw.newLine();
             for (String key : map.keySet()) {
                 String val = map.get(key);
-                key = saveConvert(key, true, true);
-                val = saveConvert(val, false, true);
+                key = saveConvert(key, true, false);
+                val = saveConvert(val, false, false);
                 bw.write(key + "=" + val);
                 bw.newLine();
             }
