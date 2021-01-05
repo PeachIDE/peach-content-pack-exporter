@@ -1,0 +1,5 @@
+pcpe.gui.exporter.title=Peach内容包导出器
+pcpe.gui.export=导出
+pcpe.gui.namespace=命名空间：
+pcpe.gui.exportPath=导出路径：
+pcpe.gui.exportPath.title=保存文件
