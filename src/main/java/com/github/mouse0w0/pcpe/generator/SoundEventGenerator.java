@@ -36,7 +36,12 @@ public class SoundEventGenerator implements DataGenerator {
 
     @Override
     public void exportL10n(Exporter exporter, Map<String, String> map) {
-        data.forEach(soundEvent -> map.put(getTranslationKey(soundEvent), I18n.format("subtitles." + getRegistryName(soundEvent).getResourcePath())));
+        for (SoundEvent soundEvent : data) {
+            String translationKey = "subtitles." + getRegistryName(soundEvent).getResourcePath();
+            if (I18n.hasKey(translationKey)) {
+                map.put(getTranslationKey(soundEvent), I18n.format(translationKey));
+            }
+        }
     }
 
     private static ResourceLocation getRegistryName(SoundEvent soundEvent) {
@@ -47,6 +52,6 @@ public class SoundEventGenerator implements DataGenerator {
 
     private static String getTranslationKey(SoundEvent soundEvent) {
         ResourceLocation location = getRegistryName(soundEvent);
-        return location.getResourceDomain() + ".soundEvent." + location.getResourcePath();
+        return "soundEvent." + location.getResourceDomain() + "." + location.getResourcePath();
     }
 }

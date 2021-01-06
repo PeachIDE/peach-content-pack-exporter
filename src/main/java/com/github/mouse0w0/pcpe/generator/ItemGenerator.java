@@ -93,6 +93,6 @@ public class ItemGenerator implements DataGenerator {
 
     private static String getTranslationKey(ItemStack item) {
         ResourceLocation location = item.getItem().getRegistryName();
-        return location.getResourceDomain() + ".item." + location.getResourcePath() + "_" + item.getMetadata();
+        return "item." + location.getResourceDomain() + "." + location.getResourcePath() + "@" + item.getMetadata();
     }
 }

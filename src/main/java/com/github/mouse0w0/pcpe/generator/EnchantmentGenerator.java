@@ -43,6 +43,6 @@ public class EnchantmentGenerator implements DataGenerator {
 
     private static String getTranslationKey(Enchantment enchantment) {
         ResourceLocation location = enchantment.getRegistryName();
-        return location.getResourceDomain() + ".enchantment." + location.getResourcePath();
+        return "enchantment." + location.getResourceDomain() + "." + location.getResourcePath();
     }
 }

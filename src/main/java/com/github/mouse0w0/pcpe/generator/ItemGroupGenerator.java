@@ -50,6 +50,6 @@ public class ItemGroupGenerator implements DataGenerator {
     }
 
     private static String getTranslationKey(String namespace, CreativeTabs creativeTabs) {
-        return namespace + ".itemGroup." + creativeTabs.getTabLabel();
+        return "itemGroup." + namespace + "." + creativeTabs.getTabLabel();
     }
 }
