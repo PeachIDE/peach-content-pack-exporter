@@ -74,7 +74,10 @@ public class Exporter implements Runnable {
 
     private void doExport() throws Exception {
         logger.info("Exporting content pack from namespace: " + namespace);
-        FileUtils.createDirectoriesIfNotExists(output);
+        if (Files.exists(output)) {
+            FileUtils.deleteDirectory(output.toFile());
+        }
+        Files.createDirectories(output);
 
         logger.info("Exporting metadata...");
         exportMetadata();
