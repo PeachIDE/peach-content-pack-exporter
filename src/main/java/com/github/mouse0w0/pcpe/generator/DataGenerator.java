@@ -9,5 +9,5 @@ public interface DataGenerator {
 
     void exportData(Exporter exporter);
 
-    void exportL10n(Exporter exporter, Map<String, String> map);
+    void exportTranslation(Exporter exporter, Map<String, String> translations);
 }

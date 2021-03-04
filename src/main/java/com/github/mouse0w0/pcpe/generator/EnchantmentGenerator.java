@@ -20,7 +20,7 @@ public class EnchantmentGenerator implements DataGenerator {
         data = new ArrayList<>();
         String namespace = exporter.getNamespace();
         for (Enchantment enchantment : Enchantment.REGISTRY) {
-            if (namespace.equals(enchantment.getRegistryName().getResourceDomain())) {
+            if (namespace.equals(enchantment.getRegistryName().getNamespace())) {
                 data.add(enchantment);
             }
         }
@@ -36,13 +36,13 @@ public class EnchantmentGenerator implements DataGenerator {
     }
 
     @Override
-    public void exportL10n(Exporter exporter, Map<String, String> map) {
-        data.forEach(enchantment -> map.put(getTranslationKey(enchantment), I18n.format(enchantment.getName())));
+    public void exportTranslation(Exporter exporter, Map<String, String> translations) {
+        data.forEach(enchantment -> translations.put(getTranslationKey(enchantment), I18n.format(enchantment.getName())));
     }
 
 
     private static String getTranslationKey(Enchantment enchantment) {
         ResourceLocation location = enchantment.getRegistryName();
-        return "enchantment." + location.getResourceDomain() + "." + location.getResourcePath();
+        return "enchantment." + location.getNamespace() + "." + location.getPath();
     }
 }

@@ -33,7 +33,7 @@ public class ItemGenerator implements DataGenerator {
         NonNullList<ItemStack> foundCreativeTabItems = NonNullList.create();
         Set<String> duplicateNames = new HashSet<>();
         for (Item item : Item.REGISTRY) {
-            if (!namespace.equals(item.getRegistryName().getResourceDomain())) continue;
+            if (!namespace.equals(item.getRegistryName().getNamespace())) continue;
 
             if (item.getHasSubtypes()) {
                 foundCreativeTabItems.clear();
@@ -77,7 +77,7 @@ public class ItemGenerator implements DataGenerator {
                     getTranslationKey(itemStack), item instanceof ItemBlock));
             try {
                 Renderer.getInstance().renderItemToPNG(frameBuffer, itemStack,
-                        exporter.getOutput().resolve("content/" + namespace + "/image/item/" + item.getRegistryName().getResourcePath() + "_" + itemStack.getMetadata() + ".png"));
+                        exporter.getOutput().resolve("content/" + namespace + "/image/item/" + item.getRegistryName().getPath() + "_" + itemStack.getMetadata() + ".png"));
             } catch (Exception e) {
                 exporter.getLogger().error("Caught an exception when rendering item \"" + itemStack.toString() + "\", skip it.", e);
             }
@@ -87,12 +87,12 @@ public class ItemGenerator implements DataGenerator {
     }
 
     @Override
-    public void exportL10n(Exporter exporter, Map<String, String> map) {
-        data.forEach(itemStack -> map.put(getTranslationKey(itemStack), itemStack.getItem().getItemStackDisplayName(itemStack)));
+    public void exportTranslation(Exporter exporter, Map<String, String> translations) {
+        data.forEach(itemStack -> translations.put(getTranslationKey(itemStack), itemStack.getItem().getItemStackDisplayName(itemStack)));
     }
 
     private static String getTranslationKey(ItemStack item) {
         ResourceLocation location = item.getItem().getRegistryName();
-        return "item." + location.getResourceDomain() + "." + location.getResourcePath() + "#" + item.getMetadata();
+        return "item." + location.getNamespace() + "." + location.getPath() + "#" + item.getMetadata();
     }
 }

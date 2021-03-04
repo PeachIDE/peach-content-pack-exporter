@@ -20,9 +20,9 @@ public class ItemGroupGenerator implements DataGenerator {
         String namespace = exporter.getNamespace();
         for (CreativeTabs itemGroup : CreativeTabs.CREATIVE_TAB_ARRAY) {
             if (IGNORED_ITEM_GROUPS.contains(itemGroup.getTabLabel())) continue;
-            ItemStack icon = itemGroup.getIconItemStack();
+            ItemStack icon = itemGroup.getIcon();
 
-            if (namespace.equals(icon.getItem().getRegistryName().getResourceDomain())) {
+            if (namespace.equals(icon.getItem().getRegistryName().getNamespace())) {
                 data.add(itemGroup);
             }
         }
@@ -33,7 +33,7 @@ public class ItemGroupGenerator implements DataGenerator {
         String namespace = exporter.getNamespace();
         List<ItemGroupData> itemGroupList = new ArrayList<>();
         for (CreativeTabs itemGroup : data) {
-            ItemStack icon = itemGroup.getIconItemStack();
+            ItemStack icon = itemGroup.getIcon();
             itemGroupList.add(new ItemGroupData(itemGroup.getTabLabel(),
                     getTranslationKey(namespace, itemGroup),
                     ItemRef.createItem(icon.getItem().getRegistryName().toString(), icon.getMetadata())));
@@ -42,10 +42,10 @@ public class ItemGroupGenerator implements DataGenerator {
     }
 
     @Override
-    public void exportL10n(Exporter exporter, Map<String, String> map) {
+    public void exportTranslation(Exporter exporter, Map<String, String> translations) {
         String namespace = exporter.getNamespace();
         for (CreativeTabs itemGroup : data) {
-            map.put(getTranslationKey(namespace, itemGroup), I18n.format(itemGroup.getTranslatedTabLabel()));
+            translations.put(getTranslationKey(namespace, itemGroup), I18n.format(itemGroup.getTranslationKey()));
         }
     }
 

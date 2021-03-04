@@ -92,10 +92,9 @@ public class Exporter implements Runnable {
             generator.exportData(this);
         }
 
-        logger.info("Exporting l10n...");
         String oldLanguage = MinecraftUtils.getLanguage();
-        exportLanguage("zh_cn");
-        exportLanguage("en_us");
+        exportTranslation("zh_cn");
+        exportTranslation("en_us");
         setLanguage(oldLanguage);
 
         logger.info("Zipping content pack...");
@@ -105,8 +104,6 @@ public class Exporter implements Runnable {
     }
 
     private void exportMetadata() throws IOException {
-
-
         ContentPackMetadata metadata = new ContentPackMetadata();
         metadata.setId(modContainer.getModId());
         metadata.setName(modContainer.getName());
@@ -124,13 +121,13 @@ public class Exporter implements Runnable {
         JsonUtils.writeJson(getOutput().resolve("content.metadata.json"), metadata);
     }
 
-    private void exportLanguage(String language) throws IOException {
-        System.out.println("Exporting language: " + language);
+    private void exportTranslation(String language) throws IOException {
+        System.out.println("Exporting translation: " + language);
         setLanguage(language);
         Map<String, String> map = new LinkedHashMap<>();
 
         for (DataGenerator generator : generators) {
-            generator.exportL10n(this, map);
+            generator.exportTranslation(this, map);
         }
 
         Path file = getOutput().resolve("content/" + namespace + "/lang/" + language.toLowerCase() + ".lang");
@@ -151,13 +148,13 @@ public class Exporter implements Runnable {
         }
     }
 
-    private static void setLanguage(String locale) {
+    private static void setLanguage(String language) {
         Minecraft minecraft = Minecraft.getMinecraft();
 
-        if (minecraft.gameSettings.language.equals(locale)) return;
+        if (minecraft.gameSettings.language.equals(language)) return;
 
-        minecraft.gameSettings.language = locale;
-        minecraft.getLanguageManager().setCurrentLanguage(new Language(locale, "", "", false));
+        minecraft.gameSettings.language = language;
+        minecraft.getLanguageManager().setCurrentLanguage(new Language(language, "", "", false));
         FMLClientHandler.instance().refreshResources(VanillaResourceType.LANGUAGES);
     }
 

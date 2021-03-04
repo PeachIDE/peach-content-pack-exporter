@@ -22,7 +22,7 @@ public class OreDictGenerator implements DataGenerator {
         List<OreDictData> data = new ArrayList<>();
         for (String oreName : OreDictionary.getOreNames()) {
             List<ItemRef> entries = OreDictionary.getOres(oreName).parallelStream()
-                    .filter(itemStack -> namespace.equals(itemStack.getItem().getRegistryName().getResourceDomain()))
+                    .filter(itemStack -> namespace.equals(itemStack.getItem().getRegistryName().getNamespace()))
                     .map(itemStack -> ItemRef.createItem(itemStack.getItem().getRegistryName().toString(), itemStack.getMetadata()))
                     .collect(Collectors.toList());
             if (entries.isEmpty()) continue;
@@ -32,7 +32,7 @@ public class OreDictGenerator implements DataGenerator {
     }
 
     @Override
-    public void exportL10n(Exporter exporter, Map<String, String> map) {
+    public void exportTranslation(Exporter exporter, Map<String, String> translations) {
         // Nothing to do
     }
 }
