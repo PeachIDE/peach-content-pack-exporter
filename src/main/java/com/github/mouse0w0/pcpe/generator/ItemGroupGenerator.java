@@ -1,7 +1,7 @@
 package com.github.mouse0w0.pcpe.generator;
 
 import com.github.mouse0w0.pcpe.Exporter;
-import com.github.mouse0w0.pcpe.data.ItemGroupData;
+import com.github.mouse0w0.pcpe.data.CPItemGroup;
 import com.github.mouse0w0.pcpe.data.ItemRef;
 import net.minecraft.client.resources.I18n;
 import net.minecraft.creativetab.CreativeTabs;
@@ -31,10 +31,10 @@ public class ItemGroupGenerator implements DataGenerator {
     @Override
     public void exportData(Exporter exporter) {
         String namespace = exporter.getNamespace();
-        List<ItemGroupData> itemGroupList = new ArrayList<>();
+        List<CPItemGroup> itemGroupList = new ArrayList<>();
         for (CreativeTabs itemGroup : data) {
             ItemStack icon = itemGroup.getIcon();
-            itemGroupList.add(new ItemGroupData(itemGroup.getTabLabel(),
+            itemGroupList.add(new CPItemGroup(itemGroup.getTabLabel(),
                     getTranslationKey(namespace, itemGroup),
                     ItemRef.createItem(icon.getItem().getRegistryName().toString(), icon.getMetadata())));
         }

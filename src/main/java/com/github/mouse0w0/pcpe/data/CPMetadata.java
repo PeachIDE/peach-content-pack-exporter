@@ -2,7 +2,7 @@ package com.github.mouse0w0.pcpe.data;
 
 import java.util.List;
 
-public class ContentPackMetadata {
+public class CPMetadata {
     private String id;
     private String name;
     private String version;

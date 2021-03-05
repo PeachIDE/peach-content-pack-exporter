@@ -1,7 +1,7 @@
 package com.github.mouse0w0.pcpe.generator;
 
 import com.github.mouse0w0.pcpe.Exporter;
-import com.github.mouse0w0.pcpe.data.SoundEventData;
+import com.github.mouse0w0.pcpe.data.CPSoundEvent;
 import net.minecraft.client.resources.I18n;
 import net.minecraft.util.ResourceLocation;
 import net.minecraft.util.SoundEvent;
@@ -30,7 +30,7 @@ public class SoundEventGenerator implements DataGenerator {
         String namespace = exporter.getNamespace();
         exporter.writeJson("content/" + namespace + "/sound.json",
                 data.stream().map(soundEvent ->
-                        new SoundEventData(getRegistryName(soundEvent).toString(), getTranslationKey(soundEvent)))
+                        new CPSoundEvent(getRegistryName(soundEvent).toString(), getTranslationKey(soundEvent)))
                         .collect(Collectors.toList()));
     }
 

@@ -1,10 +1,10 @@
 package com.github.mouse0w0.pcpe.data;
 
-public class SoundEventData {
+public class CPEnchantment {
     private String id;
     private String translationKey;
 
-    public SoundEventData(String id, String translationKey) {
+    public CPEnchantment(String id, String translationKey) {
         this.id = id;
         this.translationKey = translationKey;
     }

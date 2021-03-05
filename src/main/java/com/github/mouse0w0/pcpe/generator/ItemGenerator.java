@@ -1,7 +1,7 @@
 package com.github.mouse0w0.pcpe.generator;
 
 import com.github.mouse0w0.pcpe.Exporter;
-import com.github.mouse0w0.pcpe.data.ItemData;
+import com.github.mouse0w0.pcpe.data.CPItem;
 import com.github.mouse0w0.pcpe.renderer.FrameBuffer;
 import com.github.mouse0w0.pcpe.renderer.Renderer;
 import com.github.mouse0w0.pcpe.util.MinecraftUtils;
@@ -70,10 +70,10 @@ public class ItemGenerator implements DataGenerator {
         String namespace = exporter.getNamespace();
         FrameBuffer frameBuffer = new FrameBuffer(64, 64);
         Renderer.getInstance().startRenderItem(frameBuffer);
-        Set<ItemData> dataList = new LinkedHashSet<>();
+        Set<CPItem> dataList = new LinkedHashSet<>();
         for (ItemStack itemStack : data) {
             Item item = itemStack.getItem();
-            dataList.add(new ItemData(item.getRegistryName().toString(), itemStack.getMetadata(),
+            dataList.add(new CPItem(item.getRegistryName().toString(), itemStack.getMetadata(),
                     getTranslationKey(itemStack), item instanceof ItemBlock));
             try {
                 Renderer.getInstance().renderItemToPNG(frameBuffer, itemStack,

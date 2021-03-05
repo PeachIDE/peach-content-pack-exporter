@@ -1,6 +1,6 @@
 package com.github.mouse0w0.pcpe;
 
-import com.github.mouse0w0.pcpe.data.ContentPackMetadata;
+import com.github.mouse0w0.pcpe.data.CPMetadata;
 import com.github.mouse0w0.pcpe.generator.*;
 import com.github.mouse0w0.pcpe.util.*;
 import net.minecraft.client.Minecraft;
@@ -104,7 +104,7 @@ public class Exporter implements Runnable {
     }
 
     private void exportMetadata() throws IOException {
-        ContentPackMetadata metadata = new ContentPackMetadata();
+        CPMetadata metadata = new CPMetadata();
         metadata.setId(modContainer.getModId());
         metadata.setName(modContainer.getName());
         metadata.setVersion(modContainer.getVersion());
