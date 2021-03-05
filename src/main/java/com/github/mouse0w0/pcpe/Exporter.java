@@ -2,6 +2,9 @@ package com.github.mouse0w0.pcpe;
 
 import com.github.mouse0w0.pcpe.data.CPMetadata;
 import com.github.mouse0w0.pcpe.generator.*;
+import com.github.mouse0w0.pcpe.generator.vanilla.VanillaMapColorGenerator;
+import com.github.mouse0w0.pcpe.generator.vanilla.VanillaMaterialGenerator;
+import com.github.mouse0w0.pcpe.generator.vanilla.VanillaSoundTypeGenerator;
 import com.github.mouse0w0.pcpe.util.*;
 import net.minecraft.client.Minecraft;
 import net.minecraft.client.resources.Language;
@@ -41,6 +44,12 @@ public class Exporter implements Runnable {
         generators.add(new OreDictGenerator());
         generators.add(new EnchantmentGenerator());
         generators.add(new SoundEventGenerator());
+
+        if (namespace.equals("minecraft")) {
+            generators.add(new VanillaMaterialGenerator());
+            generators.add(new VanillaSoundTypeGenerator());
+            generators.add(new VanillaMapColorGenerator());
+        }
     }
 
     public Logger getLogger() {
