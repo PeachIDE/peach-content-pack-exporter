@@ -59,22 +59,22 @@ public class VanillaMapColorGenerator implements DataGenerator {
         mapColors.add(mapColor("emerald", Blocks.EMERALD_BLOCK));
         mapColors.add(mapColor("obsidian", Blocks.OBSIDIAN));
         mapColors.add(mapColor("netherrack", Blocks.NETHERRACK));
-        mapColors.add(mapColor("white_stained_hardened_clay", Blocks.HARDENED_CLAY));
-        mapColors.add(mapColor("orange_stained_hardened_clay", Blocks.HARDENED_CLAY, 1));
-        mapColors.add(mapColor("magenta_stained_hardened_clay", Blocks.HARDENED_CLAY, 2));
-        mapColors.add(mapColor("light_blue_stained_hardened_clay", Blocks.HARDENED_CLAY, 3));
-        mapColors.add(mapColor("yellow_stained_hardened_clay", Blocks.HARDENED_CLAY, 4));
-        mapColors.add(mapColor("lime_stained_hardened_clay", Blocks.HARDENED_CLAY, 5));
-        mapColors.add(mapColor("pink_stained_hardened_clay", Blocks.HARDENED_CLAY, 6));
-        mapColors.add(mapColor("gray_stained_hardened_clay", Blocks.HARDENED_CLAY, 7));
-        mapColors.add(mapColor("silver_stained_hardened_clay", Blocks.HARDENED_CLAY, 8));
-        mapColors.add(mapColor("cyan_stained_hardened_clay", Blocks.HARDENED_CLAY, 9));
-        mapColors.add(mapColor("purple_stained_hardened_clay", Blocks.HARDENED_CLAY, 10));
-        mapColors.add(mapColor("blue_stained_hardened_clay", Blocks.HARDENED_CLAY, 11));
-        mapColors.add(mapColor("brown_stained_hardened_clay", Blocks.HARDENED_CLAY, 12));
-        mapColors.add(mapColor("green_stained_hardened_clay", Blocks.HARDENED_CLAY, 13));
-        mapColors.add(mapColor("red_stained_hardened_clay", Blocks.HARDENED_CLAY, 14));
-        mapColors.add(mapColor("black_stained_hardened_clay", Blocks.HARDENED_CLAY, 15));
+        mapColors.add(mapColor("white_stained_hardened_clay", Blocks.STAINED_HARDENED_CLAY));
+        mapColors.add(mapColor("orange_stained_hardened_clay", Blocks.STAINED_HARDENED_CLAY, 1));
+        mapColors.add(mapColor("magenta_stained_hardened_clay", Blocks.STAINED_HARDENED_CLAY, 2));
+        mapColors.add(mapColor("light_blue_stained_hardened_clay", Blocks.STAINED_HARDENED_CLAY, 3));
+        mapColors.add(mapColor("yellow_stained_hardened_clay", Blocks.STAINED_HARDENED_CLAY, 4));
+        mapColors.add(mapColor("lime_stained_hardened_clay", Blocks.STAINED_HARDENED_CLAY, 5));
+        mapColors.add(mapColor("pink_stained_hardened_clay", Blocks.STAINED_HARDENED_CLAY, 6));
+        mapColors.add(mapColor("gray_stained_hardened_clay", Blocks.STAINED_HARDENED_CLAY, 7));
+        mapColors.add(mapColor("silver_stained_hardened_clay", Blocks.STAINED_HARDENED_CLAY, 8));
+        mapColors.add(mapColor("cyan_stained_hardened_clay", Blocks.STAINED_HARDENED_CLAY, 9));
+        mapColors.add(mapColor("purple_stained_hardened_clay", Blocks.STAINED_HARDENED_CLAY, 10));
+        mapColors.add(mapColor("blue_stained_hardened_clay", Blocks.STAINED_HARDENED_CLAY, 11));
+        mapColors.add(mapColor("brown_stained_hardened_clay", Blocks.STAINED_HARDENED_CLAY, 12));
+        mapColors.add(mapColor("green_stained_hardened_clay", Blocks.STAINED_HARDENED_CLAY, 13));
+        mapColors.add(mapColor("red_stained_hardened_clay", Blocks.STAINED_HARDENED_CLAY, 14));
+        mapColors.add(mapColor("black_stained_hardened_clay", Blocks.STAINED_HARDENED_CLAY, 15));
         exporter.writeJson("content/" + exporter.getNamespace() + "/mapColor.json", mapColors);
     }
 
