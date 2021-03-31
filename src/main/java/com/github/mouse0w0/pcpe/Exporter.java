@@ -50,6 +50,8 @@ public class Exporter implements Runnable {
             generators.add(new VanillaSoundTypeGenerator());
             generators.add(new VanillaMapColorGenerator());
         }
+
+        generators.add(new ExtraLanguageGenerator());
     }
 
     public Logger getLogger() {
