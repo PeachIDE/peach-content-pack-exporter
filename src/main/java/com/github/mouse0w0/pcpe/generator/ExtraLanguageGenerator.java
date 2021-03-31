@@ -35,7 +35,7 @@ public class ExtraLanguageGenerator implements DataGenerator {
         try (InputStream is = url.openStream()) {
             loadedTranslations.load(is);
         } catch (IOException e) {
-            exporter.getLogger().error("Failed to load extra language file.", e);
+            exporter.getLogger().error("Cannot load extra language file.", e);
             return;
         }
 
