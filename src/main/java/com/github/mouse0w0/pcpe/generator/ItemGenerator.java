@@ -80,7 +80,7 @@ public class ItemGenerator implements DataGenerator {
                 Renderer.getInstance().renderItemToPNG(frameBuffer, itemStack,
                         exporter.getOutput().resolve("content/" + namespace + "/image/item/" + item.getRegistryName().getPath() + "_" + itemStack.getMetadata() + ".png"));
             } catch (Exception e) {
-                exporter.getLogger().error("Caught an exception when rendering item \"" + itemStack.toString() + "\", skip it.", e);
+                exporter.getLogger().error("Caught an exception when rendering item \"" + itemStack + "\", skip it.", e);
             }
         }
         exporter.writeJson("content/" + namespace + "/item.json", dataList);
