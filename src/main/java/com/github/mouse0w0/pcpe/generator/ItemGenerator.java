@@ -28,28 +28,30 @@ public class ItemGenerator implements DataGenerator {
         final IBakedModel missingModel = MinecraftUtils.getModelManager().getMissingModel();
         final ItemModelMesher itemModelMesher = Minecraft.getMinecraft().getRenderItem().getItemModelMesher();
 
-        NonNullList<ItemStack> foundCreativeTabItems = NonNullList.create();
-        Set<String> duplicateNames = new HashSet<>();
+        final NonNullList<ItemStack> foundCreativeTabItems = NonNullList.create();
+        final Set<String> duplicateNames = new HashSet<>();
 
         for (Item item : Item.REGISTRY) {
             if (!exporter.checkNamespace(item)) continue;
 
             if (item.getHasSubtypes()) {
                 foundCreativeTabItems.clear();
-
                 for (CreativeTabs creativeTabs : item.getCreativeTabs()) {
                     item.getSubItems(creativeTabs, foundCreativeTabItems);
                 }
                 if (!foundCreativeTabItems.isEmpty()) {
                     data.addAll(foundCreativeTabItems);
                 } else {
+                    // Not found item. Try scan metadata.
+                    exporter.getLogger().info("Not found item. Try scan metadata. RegistryName: {}", item.getRegistryName());
                     duplicateNames.clear();
-                    for (int metadata = 0; metadata < Short.MAX_VALUE; metadata++) {
+                    for (int metadata = 0; metadata <= Short.MAX_VALUE; metadata++) {
                         ItemStack itemStack = new ItemStack(item, 1, metadata);
                         IBakedModel model = itemModelMesher.getItemModel(itemStack);
                         if (model == missingModel) break;
-                        if (!duplicateNames.add(getDuplicateCheckName(itemStack, model))) continue;
-                        data.add(itemStack);
+                        if (duplicateNames.add(getDuplicateCheckName(itemStack, model))) {
+                            data.add(itemStack);
+                        }
                     }
                 }
             } else {
