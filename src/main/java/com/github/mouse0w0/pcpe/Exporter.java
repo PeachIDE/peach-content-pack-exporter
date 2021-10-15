@@ -8,10 +8,12 @@ import com.github.mouse0w0.pcpe.generator.vanilla.VanillaSoundTypeGenerator;
 import com.github.mouse0w0.pcpe.util.*;
 import net.minecraft.client.Minecraft;
 import net.minecraft.client.resources.Language;
+import net.minecraft.util.ResourceLocation;
 import net.minecraftforge.client.resource.VanillaResourceType;
 import net.minecraftforge.fml.client.FMLClientHandler;
 import net.minecraftforge.fml.common.Loader;
 import net.minecraftforge.fml.common.ModContainer;
+import net.minecraftforge.registries.IForgeRegistryEntry;
 import org.apache.logging.log4j.LogManager;
 import org.apache.logging.log4j.Logger;
 
@@ -60,6 +62,14 @@ public class Exporter implements Runnable {
 
     public String getNamespace() {
         return namespace;
+    }
+
+    public boolean checkNamespace(IForgeRegistryEntry<?> registryEntry) {
+        return namespace.equals(registryEntry.getRegistryName().getNamespace());
+    }
+
+    public boolean checkNamespace(ResourceLocation location) {
+        return namespace.equals(location.getNamespace());
     }
 
     public Path getOutput() {

@@ -25,15 +25,14 @@ public class ItemGenerator implements DataGenerator {
     public void collectData(Exporter exporter) {
         data = new ArrayList<>();
 
-        final String namespace = exporter.getNamespace();
-
         final IBakedModel missingModel = MinecraftUtils.getModelManager().getMissingModel();
         final ItemModelMesher itemModelMesher = Minecraft.getMinecraft().getRenderItem().getItemModelMesher();
 
         NonNullList<ItemStack> foundCreativeTabItems = NonNullList.create();
         Set<String> duplicateNames = new HashSet<>();
+
         for (Item item : Item.REGISTRY) {
-            if (!namespace.equals(item.getRegistryName().getNamespace())) continue;
+            if (!exporter.checkNamespace(item)) continue;
 
             if (item.getHasSubtypes()) {
                 foundCreativeTabItems.clear();

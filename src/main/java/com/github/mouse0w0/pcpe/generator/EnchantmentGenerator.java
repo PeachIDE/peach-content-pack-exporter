@@ -18,9 +18,8 @@ public class EnchantmentGenerator implements DataGenerator {
     @Override
     public void collectData(Exporter exporter) {
         data = new ArrayList<>();
-        String namespace = exporter.getNamespace();
         for (Enchantment enchantment : Enchantment.REGISTRY) {
-            if (namespace.equals(enchantment.getRegistryName().getNamespace())) {
+            if (exporter.checkNamespace(enchantment)) {
                 data.add(enchantment);
             }
         }

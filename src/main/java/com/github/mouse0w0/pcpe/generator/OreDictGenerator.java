@@ -22,7 +22,7 @@ public class OreDictGenerator implements DataGenerator {
         List<CPOreDict> data = new ArrayList<>();
         for (String oreName : OreDictionary.getOreNames()) {
             List<ItemRef> entries = OreDictionary.getOres(oreName).parallelStream()
-                    .filter(itemStack -> namespace.equals(itemStack.getItem().getRegistryName().getNamespace()))
+                    .filter(itemStack -> exporter.checkNamespace(itemStack.getItem()))
                     .map(itemStack -> ItemRef.createItem(itemStack.getItem().getRegistryName().toString(), itemStack.getMetadata()))
                     .collect(Collectors.toList());
             if (entries.isEmpty()) continue;

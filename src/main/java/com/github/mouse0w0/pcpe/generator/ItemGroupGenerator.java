@@ -17,12 +17,11 @@ public class ItemGroupGenerator implements DataGenerator {
     @Override
     public void collectData(Exporter exporter) {
         data = new ArrayList<>();
-        String namespace = exporter.getNamespace();
         for (CreativeTabs itemGroup : CreativeTabs.CREATIVE_TAB_ARRAY) {
             if (IGNORED_ITEM_GROUPS.contains(itemGroup.getTabLabel())) continue;
             ItemStack icon = itemGroup.getIcon();
 
-            if (namespace.equals(icon.getItem().getRegistryName().getNamespace())) {
+            if (exporter.checkNamespace(icon.getItem())) {
                 data.add(itemGroup);
             }
         }

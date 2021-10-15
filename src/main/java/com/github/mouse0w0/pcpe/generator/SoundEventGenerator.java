@@ -16,10 +16,9 @@ public class SoundEventGenerator implements DataGenerator {
 
     @Override
     public void collectData(Exporter exporter) {
-        String namespace = exporter.getNamespace();
         data = new ArrayList<>();
         for (SoundEvent soundEvent : SoundEvent.REGISTRY) {
-            if (namespace.equals(getRegistryName(soundEvent).getNamespace())) {
+            if (exporter.checkNamespace(getRegistryName(soundEvent))) {
                 data.add(soundEvent);
             }
         }
