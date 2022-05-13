@@ -27,9 +27,9 @@ public class SoundEventGenerator implements DataGenerator {
     @Override
     public void exportData(Exporter exporter) {
         String namespace = exporter.getNamespace();
-        exporter.writeJson("content/" + namespace + "/sound.json",
+        exporter.writeJson("content/" + namespace + "/soundEvent.json",
                 data.stream().map(soundEvent ->
-                        new CPSoundEvent(getRegistryName(soundEvent).toString(), getTranslationKey(soundEvent)))
+                                new CPSoundEvent(getRegistryName(soundEvent).toString(), getTranslationKey(soundEvent)))
                         .collect(Collectors.toList()));
     }
 
