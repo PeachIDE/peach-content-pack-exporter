@@ -1,7 +1,8 @@
 package com.github.mouse0w0.pcpe.generator;
 
 import com.github.mouse0w0.pcpe.Exporter;
-import com.github.mouse0w0.pcpe.data.CPItem;
+import com.github.mouse0w0.pcpe.PCPE;
+import com.github.mouse0w0.pcpe.data.ItemData;
 import com.github.mouse0w0.pcpe.renderer.FrameBuffer;
 import com.github.mouse0w0.pcpe.renderer.Renderer;
 import com.github.mouse0w0.pcpe.util.MinecraftUtils;
@@ -14,10 +15,13 @@ import net.minecraft.item.ItemBlock;
 import net.minecraft.item.ItemStack;
 import net.minecraft.util.NonNullList;
 import net.minecraft.util.ResourceLocation;
+import org.apache.logging.log4j.LogManager;
+import org.apache.logging.log4j.Logger;
 
 import java.util.*;
 
 public class ItemGenerator implements DataGenerator {
+    private static final Logger LOGGER = LogManager.getLogger(PCPE.MOD_ID);
 
     private List<ItemStack> data;
 
@@ -43,7 +47,7 @@ public class ItemGenerator implements DataGenerator {
                     data.addAll(foundCreativeTabItems);
                 } else {
                     // Not found item. Try scan metadata.
-                    exporter.getLogger().info("Not found item. Try scan metadata. RegistryName: {}", item.getRegistryName());
+                    LOGGER.info("Not found item. Try scan metadata. RegistryName: {}", item.getRegistryName());
                     duplicateNames.clear();
                     for (int metadata = 0; metadata <= Short.MAX_VALUE; metadata++) {
                         ItemStack itemStack = new ItemStack(item, 1, metadata);
@@ -68,22 +72,25 @@ public class ItemGenerator implements DataGenerator {
 
     @Override
     public void exportData(Exporter exporter) {
-        String namespace = exporter.getNamespace();
         FrameBuffer frameBuffer = new FrameBuffer(64, 64);
         Renderer.getInstance().startRenderItem(frameBuffer);
-        Set<CPItem> dataList = new LinkedHashSet<>();
+        Set<ItemData> dataList = new LinkedHashSet<>();
         for (ItemStack itemStack : data) {
             Item item = itemStack.getItem();
-            dataList.add(new CPItem(item.getRegistryName().toString(), itemStack.getMetadata(),
-                    getTranslationKey(itemStack), item instanceof ItemBlock));
+            dataList.add(new ItemData(
+                    item.getRegistryName().toString(),
+                    itemStack.getMetadata(),
+                    itemStack.getMaxStackSize(),
+                    itemStack.getMaxDamage(),
+                    item instanceof ItemBlock));
             try {
                 Renderer.getInstance().renderItemToPNG(frameBuffer, itemStack,
-                        exporter.getOutput().resolve("content/" + namespace + "/image/item/" + item.getRegistryName().getPath() + "_" + itemStack.getMetadata() + ".png"));
+                        exporter.getOutput().resolve("texture/item/" + item.getRegistryName().getPath() + "_" + itemStack.getMetadata() + ".png"));
             } catch (Exception e) {
-                exporter.getLogger().error("Caught an exception when rendering item \"" + itemStack + "\", skip it.", e);
+                LOGGER.error("Caught an exception when rendering item \"" + itemStack + "\", skip it.", e);
             }
         }
-        exporter.writeJson("content/" + namespace + "/item.json", dataList);
+        exporter.writeJson("data/item.json", dataList);
         Renderer.getInstance().endRenderItem(frameBuffer);
     }
 

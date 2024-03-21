@@ -18,7 +18,7 @@ public class GuiListener {
     @SubscribeEvent
     public static void postInitGui(GuiScreenEvent.InitGuiEvent.Post event) {
         GuiScreen gui = event.getGui();
-        if (GuiMainMenu.class.equals(gui.getClass()) || GuiIngameMenu.class.equals(gui.getClass())) {
+        if (gui instanceof GuiMainMenu || gui instanceof GuiIngameMenu) {
             event.getButtonList().add(new GuiButton(EXPORT_BUTTON_ID, 0, 0, 60, 20, I18n.format("pcpe.gui.export")));
         }
     }

@@ -1,7 +1,6 @@
 package com.github.mouse0w0.pcpe.generator;
 
 import com.github.mouse0w0.pcpe.Exporter;
-import com.github.mouse0w0.pcpe.data.CPEnchantment;
 import net.minecraft.client.resources.I18n;
 import net.minecraft.enchantment.Enchantment;
 import net.minecraft.util.ResourceLocation;
@@ -27,10 +26,8 @@ public class EnchantmentGenerator implements DataGenerator {
 
     @Override
     public void exportData(Exporter exporter) {
-        String namespace = exporter.getNamespace();
-        exporter.writeJson("content/" + namespace + "/enchantment.json",
-                data.stream().map(enchantment ->
-                        new CPEnchantment(enchantment.getRegistryName().toString(), getTranslationKey(enchantment)))
+        exporter.writeJson("data/enchantment.json",
+                data.stream().map(enchantment -> enchantment.getRegistryName().toString())
                         .collect(Collectors.toList()));
     }
 

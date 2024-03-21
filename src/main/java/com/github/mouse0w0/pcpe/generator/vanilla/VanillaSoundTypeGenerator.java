@@ -1,8 +1,8 @@
 package com.github.mouse0w0.pcpe.generator.vanilla;
 
 import com.github.mouse0w0.pcpe.Exporter;
-import com.github.mouse0w0.pcpe.data.CPSoundType;
-import com.github.mouse0w0.pcpe.data.ItemRef;
+import com.github.mouse0w0.pcpe.data.IconicData;
+import com.github.mouse0w0.pcpe.data.IdMetadata;
 import com.github.mouse0w0.pcpe.generator.DataGenerator;
 import net.minecraft.block.Block;
 import net.minecraft.init.Blocks;
@@ -22,20 +22,20 @@ public class VanillaSoundTypeGenerator implements DataGenerator {
      */
     @Override
     public void exportData(Exporter exporter) {
-        List<CPSoundType> soundTypes = new ArrayList<>();
-        soundTypes.add(soundType("wood", Blocks.LOG));
-        soundTypes.add(soundType("ground", Blocks.DIRT));
-        soundTypes.add(soundType("plant", Blocks.GRASS));
-        soundTypes.add(soundType("stone", Blocks.STONE));
-        soundTypes.add(soundType("metal", Blocks.IRON_BLOCK));
-        soundTypes.add(soundType("glass", Blocks.GLASS));
-        soundTypes.add(soundType("cloth", Blocks.WOOL));
-        soundTypes.add(soundType("sand", Blocks.SAND));
-        soundTypes.add(soundType("snow", Blocks.SNOW));
-        soundTypes.add(soundType("ladder", Blocks.LADDER));
-        soundTypes.add(soundType("anvil", Blocks.ANVIL));
-        soundTypes.add(soundType("slime", Blocks.SLIME_BLOCK));
-        exporter.writeJson("content/" + exporter.getNamespace() + "/soundType.json", soundTypes);
+        List<IconicData> soundTypes = new ArrayList<>();
+        soundTypes.add(soundType("WOOD", Blocks.LOG));
+        soundTypes.add(soundType("GROUND", Blocks.DIRT));
+        soundTypes.add(soundType("PLANT", Blocks.GRASS));
+        soundTypes.add(soundType("STONE", Blocks.STONE));
+        soundTypes.add(soundType("METAL", Blocks.IRON_BLOCK));
+        soundTypes.add(soundType("GLASS", Blocks.GLASS));
+        soundTypes.add(soundType("CLOTH", Blocks.WOOL));
+        soundTypes.add(soundType("SAND", Blocks.SAND));
+        soundTypes.add(soundType("SNOW", Blocks.SNOW));
+        soundTypes.add(soundType("LADDER", Blocks.LADDER));
+        soundTypes.add(soundType("ANVIL", Blocks.ANVIL));
+        soundTypes.add(soundType("SLIME", Blocks.SLIME_BLOCK));
+        exporter.writeJson("data/sound_type.json", soundTypes);
     }
 
     @Override
@@ -43,11 +43,11 @@ public class VanillaSoundTypeGenerator implements DataGenerator {
         // Nothing to do.
     }
 
-    private CPSoundType soundType(String name, Block block) {
+    private IconicData soundType(String name, Block block) {
         return soundType(name, block, 0);
     }
 
-    private CPSoundType soundType(String name, Block block, int metadata) {
-        return new CPSoundType("minecraft:" + name, "soundType.minecraft." + name, ItemRef.createItem(block.getRegistryName().toString(), metadata));
+    private IconicData soundType(String name, Block block, int metadata) {
+        return new IconicData(name, IdMetadata.of(block.getRegistryName().toString(), metadata));
     }
 }

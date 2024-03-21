@@ -1,8 +1,8 @@
 package com.github.mouse0w0.pcpe.generator;
 
 import com.github.mouse0w0.pcpe.Exporter;
-import com.github.mouse0w0.pcpe.data.CPOreDict;
-import com.github.mouse0w0.pcpe.data.ItemRef;
+import com.github.mouse0w0.pcpe.data.IdMetadata;
+import com.github.mouse0w0.pcpe.data.OreDictData;
 import net.minecraftforge.oredict.OreDictionary;
 
 import java.util.ArrayList;
@@ -18,17 +18,17 @@ public class OreDictGenerator implements DataGenerator {
 
     @Override
     public void exportData(Exporter exporter) {
-        String namespace = exporter.getNamespace();
-        List<CPOreDict> data = new ArrayList<>();
+        List<OreDictData> data = new ArrayList<>();
         for (String oreName : OreDictionary.getOreNames()) {
-            List<ItemRef> entries = OreDictionary.getOres(oreName).parallelStream()
-                    .filter(itemStack -> exporter.checkNamespace(itemStack.getItem()))
-                    .map(itemStack -> ItemRef.createItem(itemStack.getItem().getRegistryName().toString(), itemStack.getMetadata()))
+            List<IdMetadata> entries = OreDictionary.getOres(oreName)
+                    .stream()
+                    .filter(exporter::checkNamespace)
+                    .map(IdMetadata::of)
                     .collect(Collectors.toList());
             if (entries.isEmpty()) continue;
-            data.add(new CPOreDict(oreName, entries));
+            data.add(new OreDictData(oreName, entries));
         }
-        exporter.writeJson("content/" + namespace + "/oreDictionary.json", data);
+        exporter.writeJson("data/ore_dictionary.json", data);
     }
 
     @Override

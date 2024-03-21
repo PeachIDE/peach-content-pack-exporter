@@ -1,18 +1,18 @@
 package com.github.mouse0w0.pcpe;
 
-import com.github.mouse0w0.pcpe.data.CPMetadata;
 import com.github.mouse0w0.pcpe.generator.*;
 import com.github.mouse0w0.pcpe.generator.vanilla.VanillaMapColorGenerator;
 import com.github.mouse0w0.pcpe.generator.vanilla.VanillaMaterialGenerator;
 import com.github.mouse0w0.pcpe.generator.vanilla.VanillaSoundTypeGenerator;
-import com.github.mouse0w0.pcpe.util.*;
+import com.github.mouse0w0.pcpe.util.FileUtils;
+import com.github.mouse0w0.pcpe.util.JsonUtils;
+import com.github.mouse0w0.pcpe.util.MinecraftUtils;
 import net.minecraft.client.Minecraft;
 import net.minecraft.client.resources.Language;
+import net.minecraft.item.ItemStack;
 import net.minecraft.util.ResourceLocation;
 import net.minecraftforge.client.resource.VanillaResourceType;
 import net.minecraftforge.fml.client.FMLClientHandler;
-import net.minecraftforge.fml.common.Loader;
-import net.minecraftforge.fml.common.ModContainer;
 import net.minecraftforge.registries.IForgeRegistryEntry;
 import org.apache.logging.log4j.LogManager;
 import org.apache.logging.log4j.Logger;
@@ -21,25 +21,22 @@ import java.io.BufferedWriter;
 import java.io.IOException;
 import java.nio.file.Files;
 import java.nio.file.Path;
-import java.nio.file.Paths;
-import java.util.*;
+import java.util.ArrayList;
+import java.util.LinkedHashMap;
+import java.util.List;
+import java.util.Map;
 
 public class Exporter implements Runnable {
-
-    private final Logger logger = LogManager.getLogger(PCPE.MOD_ID);
+    private static final Logger LOGGER = LogManager.getLogger(PCPE.MOD_ID);
 
     private final String namespace;
-    private final ModContainer modContainer;
     private final Path output;
-    private final Path outputFile;
 
     private final List<DataGenerator> generators = new ArrayList<>();
 
-    public Exporter(String namespace, Path outputFile) {
+    public Exporter(String namespace, Path output) {
         this.namespace = namespace;
-        this.modContainer = Loader.instance().getIndexedModList().get(namespace);
-        this.outputFile = outputFile;
-        this.output = Paths.get(".export", namespace).toAbsolutePath();
+        this.output = output.toAbsolutePath();
 
         generators.add(new ItemGenerator());
         generators.add(new ItemGroupGenerator());
@@ -52,16 +49,14 @@ public class Exporter implements Runnable {
             generators.add(new VanillaSoundTypeGenerator());
             generators.add(new VanillaMapColorGenerator());
         }
-
-        generators.add(new ExtraLanguageGenerator());
-    }
-
-    public Logger getLogger() {
-        return logger;
     }
 
     public String getNamespace() {
         return namespace;
+    }
+
+    public boolean checkNamespace(ItemStack itemStack) {
+        return checkNamespace(itemStack.getItem());
     }
 
     public boolean checkNamespace(IForgeRegistryEntry<?> registryEntry) {
@@ -81,7 +76,7 @@ public class Exporter implements Runnable {
         try {
             JsonUtils.writeJson(file, value);
         } catch (IOException e) {
-            logger.error("Caught an exception when write to " + file, e);
+            LOGGER.error("Caught an exception when write to " + file, e);
         }
     }
 
@@ -89,26 +84,23 @@ public class Exporter implements Runnable {
         try {
             doExport();
         } catch (Exception e) {
-            logger.error("Failed to export: " + namespace, e);
+            LOGGER.error("Failed to export: " + namespace, e);
         }
     }
 
     private void doExport() throws Exception {
-        logger.info("Exporting content pack from namespace: " + namespace);
+        LOGGER.info("Exporting data from namespace: " + namespace);
         if (Files.exists(output)) {
             FileUtils.deleteDirectory(output.toFile());
         }
         Files.createDirectories(output);
 
-        logger.info("Exporting metadata...");
-        exportMetadata();
-
-        logger.info("Collecting data...");
+        LOGGER.info("Collecting data...");
         for (DataGenerator generator : generators) {
             generator.collectData(this);
         }
 
-        logger.info("Exporting data...");
+        LOGGER.info("Exporting data...");
         for (DataGenerator generator : generators) {
             generator.exportData(this);
         }
@@ -118,32 +110,11 @@ public class Exporter implements Runnable {
         exportTranslation("en_us");
         setLanguage(oldLanguage);
 
-        logger.info("Zipping content pack...");
-        ZipUtils.zip(outputFile, output);
-
-        logger.info("Exported content pack to " + outputFile);
-    }
-
-    private void exportMetadata() throws IOException {
-        CPMetadata metadata = new CPMetadata();
-        metadata.setId(modContainer.getModId());
-        metadata.setName(modContainer.getName());
-        metadata.setVersion(modContainer.getVersion());
-        metadata.setMcVersion(Loader.MC_VERSION);
-        metadata.setDescription(modContainer.getMetadata().description);
-        metadata.setUrl(modContainer.getMetadata().url);
-        metadata.setAuthors(modContainer.getMetadata().authorList);
-
-        Map<String, Object> descriptor = ReflectionUtils.getDeclaredValue(modContainer, "descriptor");
-        if (descriptor != null) {
-            metadata.setDependencies((String) descriptor.get("dependencies"));
-        }
-
-        JsonUtils.writeJson(getOutput().resolve("content.metadata.json"), metadata);
+        LOGGER.info("Exported data to " + output);
     }
 
     private void exportTranslation(String language) throws IOException {
-        System.out.println("Exporting translation: " + language);
+        LOGGER.info("Exporting translation: " + language);
         setLanguage(language);
         Map<String, String> map = new LinkedHashMap<>();
 
@@ -151,13 +122,9 @@ public class Exporter implements Runnable {
             generator.exportTranslation(this, map);
         }
 
-        Path file = getOutput().resolve("content/" + namespace + "/lang/" + language.toLowerCase() + ".lang");
+        Path file = getOutput().resolve("lang/" + language.toLowerCase() + ".lang");
         FileUtils.createFileIfNotExists(file);
         try (BufferedWriter bw = Files.newBufferedWriter(file)) {
-            bw.write("#Generated by Peach Content Pack Exporter");
-            bw.newLine();
-            bw.write("#" + new Date().toString());
-            bw.newLine();
             for (String key : map.keySet()) {
                 String val = map.get(key);
                 key = saveConvert(key, true, false);

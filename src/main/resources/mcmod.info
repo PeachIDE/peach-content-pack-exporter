@@ -1,7 +1,7 @@
 [
   {
     "modid": "pcpe",
-    "name": "Peach Content Pack Exporter",
+    "name": "Peach Data Exporter",
     "description": "",
     "version": "${version}",
     "mcversion": "${mcversion}",

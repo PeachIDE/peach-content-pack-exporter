@@ -6,9 +6,8 @@ import net.minecraft.client.resources.I18n;
 import net.minecraftforge.fml.common.Loader;
 
 import javax.swing.*;
-import javax.swing.filechooser.FileFilter;
+import javax.swing.filechooser.FileSystemView;
 import java.awt.*;
-import java.io.File;
 import java.nio.file.Paths;
 
 public class GuiExport extends JFrame {
@@ -36,36 +35,26 @@ public class GuiExport extends JFrame {
         properties.add(exportPathLabel);
         JPanel exportPathPanel = new JPanel(new BorderLayout());
         properties.add(exportPathPanel);
-        JTextField exportPath = new JTextField();
-        exportPathPanel.add(BorderLayout.CENTER, exportPath);
-        JButton chooseExportPath = new JButton("...");
-        chooseExportPath.addActionListener(e -> {
+        JTextField exportPathField = new JTextField();
+        exportPathPanel.add(BorderLayout.CENTER, exportPathField);
+        JButton chooseExportPathButton = new JButton("...");
+        chooseExportPathButton.addActionListener(e -> {
             JFileChooser fileChooser = new JFileChooser();
+            fileChooser.setFileSelectionMode(JFileChooser.DIRECTORIES_ONLY);
+            fileChooser.setCurrentDirectory(FileSystemView.getFileSystemView().getHomeDirectory());
             fileChooser.setDialogTitle(I18n.format("pcpe.gui.exportPath.title"));
-            fileChooser.setSelectedFile(Paths.get(namespace.getSelectedItem().toString() + ".zip").toFile());
-            fileChooser.setFileFilter(new FileFilter() {
-                @Override
-                public boolean accept(File f) {
-                    return f.isDirectory() || f.getName().endsWith(".zip");
-                }
-
-                @Override
-                public String getDescription() {
-                    return ".zip";
-                }
-            });
-            if (fileChooser.showSaveDialog(chooseExportPath) == JFileChooser.APPROVE_OPTION) {
-                exportPath.setText(fileChooser.getSelectedFile().getAbsolutePath());
+            if (fileChooser.showSaveDialog(chooseExportPathButton) == JFileChooser.APPROVE_OPTION) {
+                exportPathField.setText(fileChooser.getSelectedFile().getAbsolutePath());
             }
         });
-        exportPathPanel.add(BorderLayout.EAST, chooseExportPath);
+        exportPathPanel.add(BorderLayout.EAST, chooseExportPathButton);
 
         JPanel buttonBar = new JPanel(new FlowLayout(FlowLayout.RIGHT));
         root.add(BorderLayout.SOUTH, buttonBar);
         JButton export = new JButton(I18n.format("pcpe.gui.export"));
         export.addActionListener(e -> {
             Minecraft.getMinecraft().addScheduledTask(
-                    new Exporter((String) namespace.getSelectedItem(), Paths.get(exportPath.getText())));
+                    new Exporter((String) namespace.getSelectedItem(), Paths.get(exportPathField.getText())));
             setVisible(false);
         });
         buttonBar.add(export);

@@ -2,10 +2,14 @@ package com.github.mouse0w0.pcpe.renderer;
 
 import com.github.mouse0w0.pcpe.util.ImageUtils;
 import net.minecraft.client.Minecraft;
-import net.minecraft.client.renderer.GlStateManager;
-import net.minecraft.client.renderer.RenderHelper;
-import net.minecraft.client.renderer.RenderItem;
+import net.minecraft.client.renderer.*;
+import net.minecraft.client.renderer.block.model.IBakedModel;
+import net.minecraft.client.renderer.block.model.ItemCameraTransforms;
+import net.minecraft.client.renderer.texture.TextureManager;
+import net.minecraft.client.renderer.texture.TextureMap;
+import net.minecraft.client.renderer.vertex.DefaultVertexFormats;
 import net.minecraft.item.ItemStack;
+import net.minecraft.util.EnumFacing;
 import org.lwjgl.BufferUtils;
 import org.lwjgl.opengl.GL11;
 
@@ -19,6 +23,7 @@ public class Renderer {
     private static final Renderer INSTANCE = new Renderer();
 
     private final Minecraft minecraft = Minecraft.getMinecraft();
+    private final TextureManager textureManager = minecraft.getTextureManager();
     private final RenderItem renderItem = minecraft.getRenderItem();
 
     private final IntBuffer lastViewport = BufferUtils.createIntBuffer(16);
@@ -30,16 +35,75 @@ public class Renderer {
     private Renderer() {
     }
 
-    public void renderItemToPNG(FrameBuffer frameBuffer, ItemStack itemStack, Path file) throws IOException {
-        GL11.glClear(GL11.GL_COLOR_BUFFER_BIT | GL11.GL_DEPTH_BUFFER_BIT);
-        renderItem.renderItemIntoGUI(itemStack, 0, 0);
-        ImageUtils.writePNGImage(frameBuffer.readPixels(), file);
+    public void renderItemToPNG(FrameBuffer frameBuffer, ItemStack stack, Path file) throws IOException {
+        ImageUtils.writePNGImage(renderItem(frameBuffer, stack), file);
     }
 
-    public BufferedImage renderItem(FrameBuffer frameBuffer, ItemStack itemStack) {
+    public BufferedImage renderItem(FrameBuffer frameBuffer, ItemStack stack) {
+        IBakedModel model = renderItem.getItemModelWithOverrides(stack, null, null);
         GL11.glClear(GL11.GL_COLOR_BUFFER_BIT | GL11.GL_DEPTH_BUFFER_BIT);
-        renderItem.renderItemIntoGUI(itemStack, 0, 0);
+        GlStateManager.pushMatrix();
+        textureManager.bindTexture(TextureMap.LOCATION_BLOCKS_TEXTURE);
+        textureManager.getTexture(TextureMap.LOCATION_BLOCKS_TEXTURE).setBlurMipmap(false, false);
+        GlStateManager.enableRescaleNormal();
+        GlStateManager.enableAlpha();
+        GlStateManager.alphaFunc(516, 0.1F);
+        GlStateManager.enableBlend();
+        GlStateManager.blendFunc(GlStateManager.SourceFactor.SRC_ALPHA, GlStateManager.DestFactor.ONE_MINUS_SRC_ALPHA);
+        GlStateManager.color(1.0F, 1.0F, 1.0F, 1.0F);
+        GlStateManager.translate(8.0F, 8.0F, 0.0F);
+        GlStateManager.scale(1.0F, -1.0F, 1.0F);
+        GlStateManager.scale(16.0F, 16.0F, 16.0F);
+
+        if (model.isGui3d()) {
+            GlStateManager.enableLighting();
+        } else {
+            GlStateManager.disableLighting();
+        }
+        model = net.minecraftforge.client.ForgeHooksClient.handleCameraTransforms(model, ItemCameraTransforms.TransformType.GUI, false);
+
+        if (!stack.isEmpty()) {
+            GlStateManager.pushMatrix();
+            GlStateManager.translate(-0.5F, -0.5F, -0.5F);
+
+            if (model.isBuiltInRenderer()) {
+                GlStateManager.color(1.0F, 1.0F, 1.0F, 1.0F);
+                GlStateManager.enableRescaleNormal();
+                stack.getItem().getTileEntityItemStackRenderer().renderByItem(stack);
+            } else {
+                renderModel(model, stack);
+            }
+
+            GlStateManager.popMatrix();
+        }
+        GlStateManager.disableAlpha();
+        GlStateManager.disableRescaleNormal();
+        GlStateManager.disableLighting();
+        GlStateManager.popMatrix();
+        textureManager.bindTexture(TextureMap.LOCATION_BLOCKS_TEXTURE);
+        textureManager.getTexture(TextureMap.LOCATION_BLOCKS_TEXTURE).restoreLastBlurMipmap();
         return frameBuffer.readPixels();
+    }
+
+    private void renderModel(IBakedModel model, ItemStack stack) {
+        renderModel(model, 0xFFFFFFFF, stack);
+    }
+
+    private void renderModel(IBakedModel model, int color, ItemStack stack) {
+        if (net.minecraftforge.common.ForgeModContainer.allowEmissiveItems) {
+            net.minecraftforge.client.ForgeHooksClient.renderLitItem(renderItem, model, color, stack);
+            return;
+        }
+        Tessellator tessellator = Tessellator.getInstance();
+        BufferBuilder bufferbuilder = tessellator.getBuffer();
+        bufferbuilder.begin(7, DefaultVertexFormats.ITEM);
+
+        for (EnumFacing enumfacing : EnumFacing.VALUES) {
+            renderItem.renderQuads(bufferbuilder, model.getQuads(null, enumfacing, 0L), color, stack);
+        }
+
+        renderItem.renderQuads(bufferbuilder, model.getQuads(null, null, 0L), color, stack);
+        tessellator.draw();
     }
 
     public void startRenderItem(FrameBuffer frameBuffer) {
