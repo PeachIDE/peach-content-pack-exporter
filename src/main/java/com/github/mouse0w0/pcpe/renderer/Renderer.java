@@ -2,14 +2,15 @@ package com.github.mouse0w0.pcpe.renderer;
 
 import com.github.mouse0w0.pcpe.util.ImageUtils;
 import net.minecraft.client.Minecraft;
-import net.minecraft.client.renderer.*;
+import net.minecraft.client.renderer.GlStateManager;
+import net.minecraft.client.renderer.RenderHelper;
+import net.minecraft.client.renderer.RenderItem;
 import net.minecraft.client.renderer.block.model.IBakedModel;
 import net.minecraft.client.renderer.block.model.ItemCameraTransforms;
+import net.minecraft.client.renderer.texture.TextureAtlasSprite;
 import net.minecraft.client.renderer.texture.TextureManager;
 import net.minecraft.client.renderer.texture.TextureMap;
-import net.minecraft.client.renderer.vertex.DefaultVertexFormats;
 import net.minecraft.item.ItemStack;
-import net.minecraft.util.EnumFacing;
 import org.lwjgl.BufferUtils;
 import org.lwjgl.opengl.GL11;
 
@@ -23,6 +24,7 @@ public class Renderer {
     private static final Renderer INSTANCE = new Renderer();
 
     private final Minecraft minecraft = Minecraft.getMinecraft();
+    private final TextureMap textureMapBlocks = minecraft.getTextureMapBlocks();
     private final TextureManager textureManager = minecraft.getTextureManager();
     private final RenderItem renderItem = minecraft.getRenderItem();
 
@@ -71,7 +73,7 @@ public class Renderer {
                 GlStateManager.enableRescaleNormal();
                 stack.getItem().getTileEntityItemStackRenderer().renderByItem(stack);
             } else {
-                renderModel(model, stack);
+                renderItem.renderModel(model, stack);
             }
 
             GlStateManager.popMatrix();
@@ -83,27 +85,6 @@ public class Renderer {
         textureManager.bindTexture(TextureMap.LOCATION_BLOCKS_TEXTURE);
         textureManager.getTexture(TextureMap.LOCATION_BLOCKS_TEXTURE).restoreLastBlurMipmap();
         return frameBuffer.readPixels();
-    }
-
-    private void renderModel(IBakedModel model, ItemStack stack) {
-        renderModel(model, 0xFFFFFFFF, stack);
-    }
-
-    private void renderModel(IBakedModel model, int color, ItemStack stack) {
-        if (net.minecraftforge.common.ForgeModContainer.allowEmissiveItems) {
-            net.minecraftforge.client.ForgeHooksClient.renderLitItem(renderItem, model, color, stack);
-            return;
-        }
-        Tessellator tessellator = Tessellator.getInstance();
-        BufferBuilder bufferbuilder = tessellator.getBuffer();
-        bufferbuilder.begin(7, DefaultVertexFormats.ITEM);
-
-        for (EnumFacing enumfacing : EnumFacing.VALUES) {
-            renderItem.renderQuads(bufferbuilder, model.getQuads(null, enumfacing, 0L), color, stack);
-        }
-
-        renderItem.renderQuads(bufferbuilder, model.getQuads(null, null, 0L), color, stack);
-        tessellator.draw();
     }
 
     public void startRenderItem(FrameBuffer frameBuffer) {
@@ -123,6 +104,17 @@ public class Renderer {
         RenderHelper.enableGUIStandardItemLighting();
         GlStateManager.enableRescaleNormal();
         GlStateManager.enableLighting();
+
+        resetAnimation();
+    }
+
+    public void resetAnimation() {
+        GlStateManager.bindTexture(textureMapBlocks.getGlTextureId());
+        for (TextureAtlasSprite sprite : textureMapBlocks.listAnimatedSprites) {
+            sprite.frameCounter = 0;
+            sprite.tickCounter = 0;
+            sprite.updateAnimation();
+        }
     }
 
     public void endRenderItem(FrameBuffer frameBuffer) {
