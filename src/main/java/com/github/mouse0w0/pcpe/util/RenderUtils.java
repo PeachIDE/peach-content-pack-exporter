@@ -29,16 +29,18 @@ public class RenderUtils {
                 //                GL40.class, GL41.class, GL42.class, GL43.class, GL44.class, GL45.class
         };
         for (Class<?> clazz : classes) {
-            for (Field field : clazz.getFields()) {
+            for (Field field : clazz.getDeclaredFields()) {
                 try {
                     int params = (int) field.get(null);
                     GL_PARAMS.putIfAbsent(params, field.getName() + " (0x" + Integer.toHexString(params) + ")");
-                } catch (ReflectiveOperationException e) {
-                    e.printStackTrace();
+                } catch (ReflectiveOperationException ignored) {
                 }
             }
         }
     }
+
+    private static final IntBuffer ib16 = BufferUtils.createIntBuffer(16);
+    private static final FloatBuffer fb16 = BufferUtils.createFloatBuffer(16);
 
     public static void saveGLState(String fileName) throws IOException {
         File file = new File(fileName);
@@ -53,10 +55,6 @@ public class RenderUtils {
     public static void printGLState() {
         printGLState(System.out);
     }
-
-
-    private static final IntBuffer ib16 = BufferUtils.createIntBuffer(16);
-    private static final FloatBuffer fb16 = BufferUtils.createFloatBuffer(16);
 
     public static void printGLState(PrintStream writer) {
         writer.println("Date: " + ZonedDateTime.now().format(DateTimeFormatter.ISO_OFFSET_DATE_TIME));
@@ -88,10 +86,10 @@ public class RenderUtils {
         writer.println("Viewport: " + toString(ib16, 4));
 
         glGetFloat(GL_PROJECTION_MATRIX, fb16);
-        writer.println("ProjectionMatrix: " + toString(fb16));
+        writer.println("ProjectionMatrix:\n" + matrix4fToString(fb16));
 
         glGetFloat(GL_MODELVIEW_MATRIX, fb16);
-        writer.println("ModelViewMatrix: " + toString(fb16));
+        writer.println("ModelViewMatrix:\n" + matrix4fToString(fb16));
     }
 
     public static String glGetParams(int pname) {
@@ -104,7 +102,7 @@ public class RenderUtils {
     }
 
     public static String toString(IntBuffer buffer, int limit) {
-        StringJoiner joiner = new StringJoiner(", ", "[", "]");
+        StringJoiner joiner = new StringJoiner(", ", "(", ")");
         for (int i = 0; i < limit; i++) {
             joiner.add(Integer.toString(buffer.get(i)));
         }
@@ -116,10 +114,17 @@ public class RenderUtils {
     }
 
     public static String toString(FloatBuffer buffer, int limit) {
-        StringJoiner joiner = new StringJoiner(", ", "[", "]");
+        StringJoiner joiner = new StringJoiner(", ", "(", ")");
         for (int i = 0; i < limit; i++) {
             joiner.add(Float.toString(buffer.get(i)));
         }
         return joiner.toString();
+    }
+
+    public static String matrix4fToString(FloatBuffer buffer) {
+        return buffer.get(0) + " \t" + buffer.get(4) + " \t" + buffer.get(8) + " \t" + buffer.get(12) + "\n" +
+                buffer.get(1) + " \t" + buffer.get(5) + " \t" + buffer.get(9) + " \t" + buffer.get(13) + "\n" +
+                buffer.get(2) + " \t" + buffer.get(6) + " \t" + buffer.get(10) + " \t" + buffer.get(14) + "\n" +
+                buffer.get(3) + " \t" + buffer.get(7) + " \t" + buffer.get(11) + " \t" + buffer.get(15);
     }
 }
