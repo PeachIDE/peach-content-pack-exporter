@@ -1,7 +1,13 @@
 package com.github.mouse0w0.pcpe.data;
 
+import com.google.gson.annotations.JsonAdapter;
+import com.google.gson.stream.JsonReader;
+import com.google.gson.stream.JsonWriter;
 import net.minecraft.item.ItemStack;
 
+import java.io.IOException;
+
+@JsonAdapter(IdMetadata.TypeAdapter.class)
 public class IdMetadata {
     public static final int METADATA_WILDCARD = Short.MAX_VALUE;
     public static final int ORE_DICTIONARY = Short.MAX_VALUE + 1;
@@ -49,5 +55,27 @@ public class IdMetadata {
     @Override
     public int hashCode() {
         return id.hashCode() * 31 + metadata;
+    }
+
+    @Override
+    public String toString() {
+        return metadata == 0 ? id : id + "#" + metadata;
+    }
+
+    public static final class TypeAdapter extends com.google.gson.TypeAdapter<IdMetadata> {
+
+        @Override
+        public void write(JsonWriter out, IdMetadata value) throws IOException {
+            if (value == null) {
+                out.nullValue();
+            } else {
+                out.value(value.toString());
+            }
+        }
+
+        @Override
+        public IdMetadata read(JsonReader in) throws IOException {
+            throw new UnsupportedOperationException();
+        }
     }
 }
